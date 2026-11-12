@@ -1,0 +1,12 @@
+# Cloudflare Tunnel 配置模板
+# 复制到 %USERPROFILE%\.cloudflared\config.yml 后替换两处占位：
+#   <TUNNEL_ID>  -> cloudflared tunnel create music-hub 输出的 ID
+#   <你的域名>    -> 例如 music.example.com
+
+tunnel: <TUNNEL_ID>
+credentials-file: C:\Users\REPLACE_ME\.cloudflared\<TUNNEL_ID>.json
+
+ingress:
+  - hostname: <你的域名>
+    service: http://127.0.0.1:8791
+  - service: http_status:404
