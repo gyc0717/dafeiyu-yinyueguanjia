@@ -11,6 +11,8 @@ from __future__ import annotations
 import html
 import os
 import secrets
+import threading
+import time
 from pathlib import Path
 
 from . import config
@@ -20,6 +22,43 @@ COOKIE_NAME = "mh_token"
 LOCAL_HOSTS = {"127.0.0.1", "::1", "localhost"}
 
 ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"  # 去掉了容易看错的 i l o 0 1
+TOKEN_LENGTH = 12
+
+# 失败尝试限制：同一 IP 在窗口内失败太多次就锁一段时间。
+# 没有这个，8 位口令等于可以无限试——一旦这个端口被转发到公网就是裸奔。
+FAIL_MAX = 8
+FAIL_WINDOW = 600      # 10 分钟
+LOCK_SECONDS = 900     # 锁 15 分钟
+
+_failures: dict[str, list[float]] = {}
+_fail_lock = threading.Lock()
+
+
+def is_locked(ip: str) -> int:
+    """返回还要等多少秒；0 表示没被锁。"""
+    now = time.time()
+    with _fail_lock:
+        hits = [t for t in _failures.get(ip, []) if now - t < FAIL_WINDOW]
+        if hits:
+            _failures[ip] = hits
+        else:
+            _failures.pop(ip, None)
+        if len(hits) >= FAIL_MAX:
+            return max(int(LOCK_SECONDS - (now - hits[-1])), 1)
+    return 0
+
+
+def register_failure(ip: str) -> None:
+    now = time.time()
+    with _fail_lock:
+        hits = [t for t in _failures.get(ip, []) if now - t < FAIL_WINDOW]
+        hits.append(now)
+        _failures[ip] = hits
+
+
+def clear_failures(ip: str) -> None:
+    with _fail_lock:
+        _failures.pop(ip, None)
 
 
 def enabled() -> bool:
@@ -31,7 +70,7 @@ def token() -> str:
         value = TOKEN_PATH.read_text(encoding="utf-8").strip()
         if value:
             return value
-    value = "".join(secrets.choice(ALPHABET) for _ in range(8))
+    value = "".join(secrets.choice(ALPHABET) for _ in range(TOKEN_LENGTH))
     TOKEN_PATH.parent.mkdir(parents=True, exist_ok=True)
     TOKEN_PATH.write_text(value, encoding="utf-8")
     return value

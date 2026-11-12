@@ -118,7 +118,7 @@ $token = $null
 if (Test-Path $tokenFile) { $token = (Get-Content $tokenFile -Raw).Trim() }
 if (-not $token) {
   $chars = "abcdefghjkmnpqrstuvwxyz23456789".ToCharArray()
-  $token = -join (1..8 | ForEach-Object { $chars | Get-Random })
+  $token = -join (1..12 | ForEach-Object { $chars | Get-Random })
   New-Item -ItemType Directory -Force -Path (Join-Path $Root "data") | Out-Null
   Set-Content -Path $tokenFile -Value $token -NoNewline -Encoding ASCII
 }

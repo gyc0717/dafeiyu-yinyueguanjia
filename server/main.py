@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import html
+import hmac
 import http.client
 import json
 import logging
@@ -1380,15 +1381,29 @@ async def lan_guard(request: Request, call_next):
     if host in auth.LOCAL_HOSTS:
         return await call_next(request)
 
+    locked = auth.is_locked(host)
+    if locked:
+        detail = f"尝试次数过多，请 {locked} 秒后再试"
+        headers = {"Retry-After": str(locked)}
+        if request.url.path.startswith("/api/"):
+            return JSONResponse({"detail": detail}, status_code=429, headers=headers)
+        return HTMLResponse(auth.login_page(detail), status_code=429, headers=headers)
+
     expected = auth.token()
     supplied = request.cookies.get(auth.COOKIE_NAME) or request.query_params.get("token") or ""
-    if supplied == expected:
+    if supplied and hmac.compare_digest(supplied, expected):
+        auth.clear_failures(host)
         response = await call_next(request)
         if request.query_params.get("token"):
             # 第一次用 ?token=xxx 进来就种 cookie，之后不用再带
-            response.set_cookie(auth.COOKIE_NAME, expected, max_age=30 * 24 * 3600, httponly=True, samesite="lax")
+            secure = (request.headers.get("x-forwarded-proto") or "").lower() == "https"
+            response.set_cookie(
+                auth.COOKIE_NAME, expected, max_age=30 * 24 * 3600,
+                httponly=True, samesite="lax", secure=secure,
+            )
         return response
 
+    auth.register_failure(host)
     if request.url.path.startswith("/api/"):
         return JSONResponse({"detail": "需要口令：在地址后面加 ?token=xxxxxxxx"}, status_code=401)
     return HTMLResponse(auth.login_page("口令不对，或者还没填。"), status_code=401)
