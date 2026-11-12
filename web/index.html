@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#070b12" />
+  <title>大肥鱼 · 音乐管家</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%236fb6ff'/%3E%3Cstop offset='1' stop-color='%23a78bfa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%230b1220'/%3E%3Cpath d='M38 14v24a8 8 0 1 1-4-6.9V20l-14 3v22a8 8 0 1 1-4-6.9V19z' fill='url(%23g)'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/assets/tokens.css" />
+  <link rel="stylesheet" href="/assets/app.css" />
+  <link rel="stylesheet" href="/assets/onboard.css" />
+  <link rel="stylesheet" href="/assets/pierce.css" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.6c0-1.1 1.2-1.8 2.2-1.2l9.1 6.4c.9.6.9 1.9 0 2.5l-9.1 6.4c-1 .7-2.2 0-2.2-1.2z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4.5" width="4" height="15" rx="1.6"/><rect x="14" y="4.5" width="4" height="15" rx="1.6"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="M6 5.5a1.5 1.5 0 0 1 3 0v13a1.5 1.5 0 0 1-3 0z"/><path d="M20 6.4v11.2c0 1.1-1.2 1.7-2.1 1.1l-8.2-5.6a1.4 1.4 0 0 1 0-2.3l8.2-5.6c.9-.6 2.1 0 2.1 1.2z"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M18 5.5a1.5 1.5 0 0 1 3 0v13a1.5 1.5 0 0 1-3 0z"/><path d="M4 6.4v11.2c0 1.1 1.2 1.7 2.1 1.1l8.2-5.6a1.4 1.4 0 0 0 0-2.3L6.1 5.2C5.2 4.6 4 5.2 4 6.4z"/></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M17 3.5 21 7l-4 3.5V8.7h-2.1c-1 0-1.9.5-2.5 1.3l-.5.7-1.6-2 .4-.6A5 5 0 0 1 14.9 6H17z"/><path d="M17 13.5 21 17l-4 3.5v-1.8h-2.1a5 5 0 0 1-4.1-2.1l-.4-.6 1.6-2 .5.7c.6.8 1.5 1.3 2.5 1.3H17z"/><path d="M3 7h3.2c1.6 0 3.1.8 4 2.1l4.4 6.6c.5.8 1.4 1.3 2.3 1.3H21v2h-4.1a5 5 0 0 1-4.1-2.1L8.4 10.2A2 2 0 0 0 6.7 9H3z" opacity=".55"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M7 4h10a4 4 0 0 1 4 4v5h-2V8a2 2 0 0 0-2-2H7z"/><path d="M9.5 1.5 6 4.5l3.5 3V1.5z"/><path d="M17 20H7a4 4 0 0 1-4-4v-5h2v5a2 2 0 0 0 2 2h10z"/><path d="M14.5 22.5 18 19.5l-3.5-3v6z"/></symbol>
+    <symbol id="i-repeat-one" viewBox="0 0 24 24"><path d="M7 4h10a4 4 0 0 1 4 4v5h-2V8a2 2 0 0 0-2-2H7z"/><path d="M9.5 1.5 6 4.5l3.5 3V1.5z"/><path d="M17 20H7a4 4 0 0 1-4-4v-5h2v5a2 2 0 0 0 2 2h10z"/><path d="M14.5 22.5 18 19.5l-3.5-3v6z"/><text x="12" y="15" font-size="7" font-family="Arial" text-anchor="middle" fill="currentColor" stroke="none">1</text></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20.1 4.9 13.4A4.7 4.7 0 0 1 12 7.2a4.7 4.7 0 0 1 7.1 6.2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 9.5A1.5 1.5 0 0 1 5.5 8H8l4.3-3.4c.7-.5 1.7 0 1.7.9v13c0 .9-1 1.4-1.7.9L8 16H5.5A1.5 1.5 0 0 1 4 14.5z"/><path d="M16.5 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M19 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".55"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9.5A1.5 1.5 0 0 1 5.5 8H8l4.3-3.4c.7-.5 1.7 0 1.7.9v13c0 .9-1 1.4-1.7.9L8 16H5.5A1.5 1.5 0 0 1 4 14.5z"/><path d="m17 9 5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="m15.2 15.2 4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-lyrics" viewBox="0 0 24 24"><path d="M4 6h16M4 10.5h11M4 15h16M4 19.5h8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+    <symbol id="i-glass" viewBox="0 0 24 24"><path d="M12 3 4 8.5v7L12 21l8-5.5v-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 3v9l8-3.5M12 12 4 8.5M12 12v9" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".55"/></symbol>
+    <symbol id="i-queue" viewBox="0 0 24 24"><path d="M4 6h12M4 11h12M4 16h8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M18 12.5v6.2a2.3 2.3 0 1 1-1.4-2.1v-4.1l3.4-.8v2z"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="m14.5 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.4" r="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c.7-3.5 3.4-5.5 7-5.5s6.3 2 7 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.6 5.8 6.4.6-4.8 4.2 1.4 6.2L12 16.8 6.4 19.8l1.4-6.2L3 9.4l6.4-.6z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5.2h4V7M7.2 7l.9 12.1h7.8L16.8 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-order" viewBox="0 0 24 24"><path d="M4 6.5h9M4 12h9M4 17.5h5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="m15.5 8.5 4 3.5-4 3.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.1-1.55 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.1 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.1.4.3.75.6 1 .3.25.7.4 1.1.4H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.6z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
+
+  <div class="ambient" id="ambient"></div>
+  <div class="grain"></div>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-orb"><span>♪</span></div>
+        <div class="brand-text">
+          <strong>大肥鱼</strong>
+          <span>音乐管家 · 本地版</span>
+        </div>
+      </div>
+
+      <label class="search">
+        <svg class="icon"><use href="#i-search"/></svg>
+        <input id="search" type="search" placeholder="搜索歌曲、歌手" autocomplete="off" spellcheck="false" />
+        <kbd>/</kbd>
+      </label>
+
+      <nav class="tabs" role="tablist">
+        <button class="tab" data-tab="playlists" role="tab">歌单 <em id="playlistCount">0</em></button>
+        <button class="tab" data-tab="online" role="tab">在线 <em>QQ</em></button>
+        <button class="tab active" data-tab="recent" role="tab">最近播放</button>
+      </nav>
+
+      <div class="provider-switch" id="providerSwitch" hidden>
+        <button type="button" data-provider="qq" class="on">QQ 音乐</button>
+        <button type="button" data-provider="netease">网易云</button>
+        <button type="button" class="provider-login" id="providerLoginBtn" title="扫码登录当前音源">扫码登录</button>
+      </div>
+
+      <div class="list-head">
+        <span id="listLabel">全部歌曲</span>
+        <span id="listMeta" class="muted">0 首</span>
+      </div>
+      <div class="list-actions" id="listActions" hidden>
+        <button class="mini" id="backToPlaylists" hidden>返回歌单</button>
+        <button class="mini" id="playAllBtn" hidden>播放全部</button>
+        <button class="mini" id="syncPlaylistBtn" hidden title="重新读取这个歌单（覆盖 24 小时快照）">同步</button>
+        <button class="mini" id="saveQqBtn" hidden title="复制成可以编辑的本地歌单">另存为我的歌单</button>
+        <button class="mini" id="renamePlaylistBtn" hidden title="给这个本地歌单改名">改名</button>
+        <button class="mini" id="selectBtn" hidden title="多选曲目">选择</button>
+        <button class="mini" id="cancelSelectBtn" hidden>取消选择</button>
+        <button class="mini" id="newPlaylistBtn" hidden>新建歌单</button>
+        <span class="sync-note" id="syncNote" hidden></span>
+      </div>
+      <div class="list-actions batch-bar" id="batchBar" hidden>
+        <span id="batchInfo">已选 0 首</span>
+        <button class="mini" id="selectAllBtn">全选</button>
+        <button class="mini" id="removeSelectedBtn">移除</button>
+      </div>
+
+      <div class="track-list" id="trackList" role="list"></div>
+
+      <div class="sidebar-foot">
+        <div class="today" id="todayStats">今天还没开始听</div>
+        <div class="foot-actions">
+          <button class="ghost foot-icon sidebar-hide" id="sidebarHideBtn" title="隐藏侧栏" aria-label="隐藏侧栏">
+            <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 8H4" />
+              <path d="M7.5 4.5 4 8l3.5 3.5" />
+            </svg>
+          </button>
+          <button class="ghost foot-icon" id="accountBtn" title="账号与连接" aria-label="账号与连接">
+            <svg class="icon"><use href="#i-user"/></svg>
+          </button>
+          <button class="ghost foot-icon" id="pierceToggleBtn" title="一键透明" aria-label="一键透明" hidden>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 2.4S3.2 6.9 3.2 9.8a4.8 4.8 0 009.6 0C12.8 6.9 8 2.4 8 2.4z" />
+              <path d="M6.3 10a1.9 1.9 0 003.4 0" />
+            </svg>
+          </button>
+          <button class="ghost foot-icon" id="settingsBtn" title="设置" aria-label="设置">
+            <svg class="icon"><use href="#i-settings"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="live-label"><span class="live-dot"></span>正在播放</div>
+        <div class="top-actions">
+          <button class="round glass-toggle" id="glassBtn" title="玻璃拟态：关" aria-pressed="false">
+            <svg class="icon"><use href="#i-glass"/></svg>
+          </button>
+          <button class="roadmap" id="roadmapBtn" title="项目路线图">
+            <span class="roadmap-label">路线图</span>
+            <span class="roadmap-mini" id="roadmapMini"><i></i><i></i><i></i><i></i></span>
+            <strong id="roadmapPct">--</strong>
+          </button>
+          <button class="ghost" id="butlerBtn" title="管家：搜歌 / 整理 / 周报">
+            <svg class="icon"><use href="#i-search"/></svg>
+            <span>管家</span>
+          </button>
+          <button class="ghost sfp-trigger" id="starfieldBtn" title="星海面板">
+            <svg class="icon"><use href="#i-star"/></svg>
+            <span>星海</span>
+          </button>
+          <button class="ghost" id="queueBtn">
+            <svg class="icon"><use href="#i-queue"/></svg>
+            <span>播放队列</span>
+            <em id="queueCount">0</em>
+          </button>
+        </div>
+      </header>
+
+      <!-- 首页：进软件先看到的这一页（现在播放 / 快捷入口 / 今日数字 / 星海入口 / 最近） -->
+      <section class="home" id="homeView" aria-label="首页">
+        <header class="home-head">
+          <div class="home-hello">
+            <span class="home-eyebrow" id="homeGreeting">GOOD EVENING</span>
+            <h1 id="homeHello">晚上好，大肥鱼</h1>
+            <p>今天听到现在 · 每颗星都是一首歌</p>
+          </div>
+          <div class="home-chips">
+            <span class="home-chip local"><i></i>本地 <b id="homeLocalCount">0</b></span>
+            <span class="home-chip qq"><i></i>QQ <b id="homeQqCount">0</b></span>
+          </div>
+        </header>
+
+        <div class="home-top">
+          <article class="home-now">
+            <div class="hn-cover" id="homeCover"><span class="hn-fallback">♪</span></div>
+            <div class="hn-body">
+              <span class="hn-label" id="homeNowLabel">正在播放 · 本地</span>
+              <strong id="homeNowTitle">还没有在播的歌</strong>
+              <span class="hn-artist" id="homeNowArtist">在左边挑一首</span>
+              <div class="hn-bar"><i id="homeNowFill"></i></div>
+              <div class="hn-times"><span id="homeNowTime">0:00</span><span id="homeNowDur">0:00</span></div>
+              <div class="hn-actions">
+                <button class="round small" id="homePrev" title="上一首"><svg class="icon"><use href="#i-prev"/></svg></button>
+                <button class="play small" id="homePlay" title="播放 / 暂停"><svg class="icon" id="homePlayIcon"><use href="#i-play"/></svg></button>
+                <button class="round small" id="homeNext" title="下一首"><svg class="icon"><use href="#i-next"/></svg></button>
+                <button class="ghost compact" id="homeOpenPlayer">打开播放页</button>
+              </div>
+            </div>
+          </article>
+
+          <div class="home-tiles">
+            <button class="home-tile" data-home="starfield">
+              <svg class="icon"><use href="#i-star"/></svg>
+              <strong>星海探索</strong>
+              <span>点一颗星，听它的歌</span>
+            </button>
+            <button class="home-tile" data-home="search">
+              <svg class="icon"><use href="#i-search"/></svg>
+              <strong>搜歌点播</strong>
+              <span>本地 + QQ 在线</span>
+            </button>
+            <button class="home-tile" data-home="library">
+              <svg class="icon"><use href="#i-lyrics"/></svg>
+              <strong>曲库管理</strong>
+              <span>按平台看全部歌曲</span>
+            </button>
+            <button class="home-tile" data-home="report">
+              <svg class="icon"><use href="#i-scan"/></svg>
+              <strong>本周报告</strong>
+              <span>数字、柱状、TOP5</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="home-stats">
+          <div class="home-stat"><span>今日播放</span><b id="homePlays">0</b><em>首</em></div>
+          <div class="home-stat"><span>今日时长</span><b id="homeMinutes">0</b><em>分钟</em></div>
+          <div class="home-stat"><span>本地曲库</span><b id="homeTracks">0</b><em>首</em></div>
+          <div class="home-stat"><span>QQ 在线</span><b id="homeQqTracks">0</b><em>首</em></div>
+        </div>
+
+        <section class="home-teaser">
+          <div class="ht-text">
+            <span class="home-eyebrow">STARFIELD</span>
+            <h2>把曲库摊成一片星海</h2>
+            <p>颜色是平台，大小是时长，正在播放的那颗会呼吸。<br>点星看卡片，双击直接播。</p>
+            <button class="solid compact" id="homeEnterStarfield">进入星海 ↗</button>
+          </div>
+          <canvas class="ht-canvas" id="homeTeaserCanvas"></canvas>
+        </section>
+
+        <section class="home-recent">
+          <h3>最近</h3>
+          <div class="home-recent-list" id="homeRecentList"></div>
+        </section>
+      </section>
+
+      <section class="hero">
+        <div class="art-column">
+          <div class="art-glow" id="artGlow"></div>
+          <canvas id="viz" width="560" height="560"></canvas>
+          <div class="cover" id="cover">
+            <img id="coverImg" alt="" hidden />
+            <div class="cover-empty" id="coverEmpty">♪</div>
+            <div class="cover-shine"></div>
+            <div class="art-badge" id="formatBadge">LOCAL</div>
+          </div>
+        </div>
+
+        <div class="info-column">
+          <div class="eyebrow" id="eyebrow">本地曲库 · LOCAL FILE</div>
+          <h1 id="nowTitle">把耳朵叫醒</h1>
+          <p class="artist-line"><span id="nowArtist">从左边挑一首开始</span><i>·</i><span id="nowAlbum">本地曲库</span></p>
+
+          <div class="peek" id="peek">
+            <div class="peek-line side" data-slot="prev"></div>
+            <div class="peek-line active" data-slot="cur">—</div>
+            <div class="peek-line side" data-slot="next"></div>
+          </div>
+
+          <div class="timeline">
+            <span class="time" id="curTime">0:00</span>
+            <div class="bar" id="seekBar" role="slider" aria-label="播放进度">
+              <div class="bar-track"></div>
+              <div class="bar-fill" id="barFill"></div>
+              <div class="bar-knob" id="barKnob"></div>
+            </div>
+            <span class="time" id="durTime">0:00</span>
+          </div>
+
+          <div class="controls">
+            <div class="playmode" id="playModeWrap">
+              <button class="round" id="playModeBtn" title="播放模式：列表循环" aria-haspopup="menu" aria-expanded="false">
+                <svg class="icon"><use id="playModeIcon" href="#i-repeat"/></svg>
+              </button>
+              <div class="playmode-menu" id="playModeMenu" role="menu" aria-label="播放模式" hidden>
+                <button class="playmode-item" data-mode="order" role="menuitem">
+                  <svg class="icon"><use href="#i-order"/></svg>
+                  <span>顺序播放</span>
+                  <em>播完就停</em>
+                </button>
+                <button class="playmode-item" data-mode="all" role="menuitem">
+                  <svg class="icon"><use href="#i-repeat"/></svg>
+                  <span>列表循环</span>
+                  <em>放完从头再来</em>
+                </button>
+                <button class="playmode-item" data-mode="one" role="menuitem">
+                  <svg class="icon"><use href="#i-repeat-one"/></svg>
+                  <span>单曲循环</span>
+                  <em>一直放这一首</em>
+                </button>
+                <button class="playmode-item" data-mode="shuffle" role="menuitem">
+                  <svg class="icon"><use href="#i-shuffle"/></svg>
+                  <span>随机播放</span>
+                  <em>打乱队列</em>
+                </button>
+              </div>
+            </div>
+            <button class="round" id="prevBtn" title="上一首"><svg class="icon"><use href="#i-prev"/></svg></button>
+            <button class="play" id="playBtn" title="播放 / 暂停">
+              <svg class="icon" id="playIcon"><use href="#i-play"/></svg>
+            </button>
+            <button class="round" id="nextBtn" title="下一首"><svg class="icon"><use href="#i-next"/></svg></button>
+            <button class="round" id="likeBtn" title="收藏 / 取消收藏" aria-pressed="false"><svg class="icon"><use href="#i-heart"/></svg></button>
+            <div class="volume">
+              <button class="round small" id="muteBtn" title="静音"><svg class="icon"><use href="#i-volume"/></svg></button>
+              <input id="volume" type="range" min="0" max="100" value="80" aria-label="音量" />
+            </div>
+          </div>
+
+          <div class="hint-row">
+            <span class="hint">空格 播放 / 暂停　← → 切歌　F 整屏　R 进度　G 玻璃</span>
+            <span class="badge" id="eventState">未开始</span>
+          </div>
+        </div>
+      </section>
+      <!-- 星海：原生视图，只保留星图本身；播放、队列、导航都复用主界面 -->
+      <section class="starfield" id="starfieldView" aria-hidden="true" hidden aria-label="星海">
+        <header class="sfp-bar">
+          <div class="sfp-title">
+            <span class="eyebrow">STARFIELD</span>
+            <h2>星海</h2>
+          </div>
+          <div class="sfp-filters" role="group" aria-label="按来源筛选">
+            <button class="sfp-chip on" data-filter="all">全部 <em>0</em></button>
+            <button class="sfp-chip" data-filter="local">本地 <em>0</em></button>
+            <button class="sfp-chip" data-filter="qq">QQ <em>0</em></button>
+          </div>
+          <label class="search sfp-search">
+            <svg class="icon"><use href="#i-search"/></svg>
+            <input id="sfpSearch" type="search" placeholder="在星海里找歌" autocomplete="off" spellcheck="false" />
+          </label>
+        </header>
+
+        <div class="sfp-stage" id="sfpStage">
+          <canvas id="sfpCanvas"></canvas>
+          <div class="sfp-legend">颜色 = 平台 · 大小 = 时长 · <span id="sfpTotal">0</span> 颗星</div>
+          <div class="sfp-zoom" id="sfpZoom">100%</div>
+          <div class="sfp-hint">滚轮缩放 · 拖动平移 · 点星看详情 · 双击播放</div>
+          <div class="sfp-hover" id="sfpHover" hidden></div>
+
+          <article class="sfp-card" id="sfpCard" hidden>
+            <div class="sfp-card-cover" id="sfpCardCover"><span class="sfp-cover-fallback">♪</span></div>
+            <div class="sfp-card-body">
+              <strong id="sfpCardTitle">—</strong>
+              <p id="sfpCardMeta">—</p>
+              <div class="sfp-card-tags">
+                <span class="sfp-badge local" id="sfpCardBadge">本地</span>
+                <span class="sfp-card-dur" id="sfpCardDur">0:00</span>
+              </div>
+              <div class="sfp-card-actions">
+                <button class="solid compact" id="sfpPlay">播放</button>
+                <button class="ghost compact" id="sfpQueueNext">下一首播放</button>
+                <button class="mini" id="sfpCardClose">关闭</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <footer class="sfp-dock" id="sfpDock">
+          <div class="sfp-dock-cover" id="sfpDockCover"><span class="sfp-cover-fallback">♪</span></div>
+          <div class="sfp-dock-meta">
+            <strong id="sfpDockTitle">还没有在播的歌</strong>
+            <span id="sfpDockMeta">—</span>
+          </div>
+          <div class="sfp-dock-controls">
+            <button class="round small" id="sfpDockPrev" title="上一首"><svg class="icon"><use href="#i-prev"/></svg></button>
+            <button class="ghost compact" id="sfpDockPlay">播放</button>
+            <button class="round small" id="sfpDockNext" title="下一首"><svg class="icon"><use href="#i-next"/></svg></button>
+          </div>
+          <div class="sfp-dock-line"><i id="sfpDockFill"></i></div>
+          <span class="sfp-dock-time" id="sfpDockTime">0:00 / 0:00</span>
+        </footer>
+      </section>
+    </main>
+
+    <nav class="mobile-nav" id="mobileNav" aria-label="移动端导航">
+      <button type="button" data-mnav="home">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20h-5v-5h-6v5H4z"/></svg>
+        <span>首页</span>
+      </button>
+      <button type="button" data-mnav="library">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+        <span>曲库</span>
+      </button>
+      <button type="button" data-mnav="lyrics">
+        <svg class="icon"><use href="#i-lyrics"/></svg>
+        <span>歌词</span>
+      </button>
+      <button type="button" data-mnav="starfield">
+        <svg class="icon"><use href="#i-star"/></svg>
+        <span>星海</span>
+      </button>
+    </nav>
+  </div>
+
+  <div class="drawer" id="queuePanel" aria-hidden="true">
+    <div class="drawer-head">
+      <div><h3>播放队列</h3><span id="queueMeta">0 首</span></div>
+      <button class="round small" id="closeQueue" title="关闭"><svg class="icon"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="queue-list" id="queueList"></div>
+  </div>
+
+  <aside class="butler" id="butlerDrawer" aria-hidden="true">
+    <div class="butler-head">
+      <div>
+        <span class="eyebrow">BUTLER</span>
+        <h3>大肥鱼 · 管家</h3>
+      </div>
+      <button class="round small" id="closeButler" title="关闭"><svg class="icon"><use href="#i-close"/></svg></button>
+    </div>
+
+    <div class="butler-home" id="butlerHome">
+      <button class="butler-tile" data-panel="search">
+        <svg class="icon"><use href="#i-search"/></svg>
+        <strong>搜歌</strong>
+        <span>直接搜 QQ 音乐，点一首就放</span>
+      </button>
+      <button class="butler-tile" data-panel="tidy">
+        <svg class="icon"><use href="#i-scan"/></svg>
+        <strong>整理</strong>
+        <span>查本地库里的重复曲目</span>
+      </button>
+      <button class="butler-tile" data-panel="report">
+        <svg class="icon"><use href="#i-lyrics"/></svg>
+        <strong>周报</strong>
+        <span>这七天的数字、柱状、Top 5</span>
+      </button>
+    </div>
+
+    <section class="butler-panel" id="butlerPanel" hidden>
+      <button class="mini back-btn" id="butlerBack">← 管家</button>
+
+      <div class="butler-view" id="bvSearch" hidden>
+        <label class="search">
+          <svg class="icon"><use href="#i-search"/></svg>
+          <input id="butlerSearchInput" type="search" placeholder="搜 QQ 音乐里的歌" autocomplete="off" spellcheck="false" />
+        </label>
+        <div class="butler-body" id="butlerSearchResults">
+          <p class="butler-empty">输入歌名或歌手，回车搜索</p>
+        </div>
+      </div>
+
+      <div class="butler-view" id="bvTidy" hidden>
+        <p class="butler-hint">只读检查：不移动、不改名、不删除任何文件</p>
+        <div class="tidy-actions">
+          <button class="solid compact" id="butlerTidyRun">查重复</button>
+          <button class="ghost compact" id="butlerPlanRun">生成整理计划</button>
+        </div>
+        <div class="butler-body" id="butlerTidyBody">
+          <p class="butler-empty">点上面按钮扫一遍本地曲库</p>
+        </div>
+        <div class="tidy-exec" id="tidyExecBar" hidden>
+          <p class="tidy-exec-hint" id="tidyExecHint"></p>
+          <button class="solid compact" id="tidyStartBtn">开始整理</button>
+        </div>
+        <div class="tidy-progress" id="tidyProgress" hidden>
+          <div class="tp-bar"><i id="tidyProgressFill"></i></div>
+          <p class="tp-text" id="tidyProgressText"></p>
+        </div>
+        <div class="tidy-history" id="tidyHistory" hidden></div>
+        <div class="report-actions" id="planActions" hidden>
+          <button class="mini" id="planCsvBtn" title="把计划导成表格，先拿去核对">导出清单 CSV</button>
+        </div>
+      </div>
+
+      <div class="butler-view" id="bvReport" hidden>
+        <div class="report-numbers" id="reportNumbers"></div>
+        <div class="report-bars" id="reportBars"></div>
+        <div class="report-top" id="reportTop"></div>
+        <div class="report-actions">
+          <button class="mini" id="reportPngBtn" title="存成一张图片">存成图片</button>
+          <button class="mini" id="reportCsvBtn" title="存成表格，Excel 能直接打开">存成 CSV</button>
+        </div>
+      </div>
+    </section>
+  </aside>
+
+  <div class="roadmap-overlay" id="roadmapOverlay" aria-hidden="true">
+    <div class="roadmap-card" role="dialog" aria-modal="true" aria-labelledby="roadmapTitle">
+      <div class="roadmap-head">
+        <div>
+          <span class="eyebrow">PROJECT ROADMAP</span>
+          <h2 id="roadmapTitle">项目进度</h2>
+        </div>
+        <button class="round small" id="closeRoadmap" title="关闭">
+          <svg class="icon"><use href="#i-close"/></svg>
+        </button>
+      </div>
+      <div class="roadmap-hero">
+        <div class="roadmap-big">
+          <strong id="roadmapBig">0%</strong>
+          <span>四个里程碑等权估算</span>
+        </div>
+        <div class="roadmap-track"><i id="roadmapFill"></i></div>
+      </div>
+      <div class="roadmap-list" id="roadmapList"></div>
+      <div class="roadmap-foot">
+        <span>更新 <em id="roadmapUpdated">—</em></span>
+        <span class="roadmap-next">下一步 <em id="roadmapNext">—</em></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="lyrics-overlay" id="lyricsOverlay" aria-hidden="true">    <div class="lo-backdrop" id="loBackdrop"></div>
+    <div class="lo-veil"></div>
+    <header class="lo-head">
+      <button class="ghost" id="closeLyrics"><svg class="icon"><use href="#i-back"/></svg><span>返回</span></button>
+      <div class="lo-meta">
+        <strong id="loTitle">—</strong>
+        <span id="loArtist"></span>
+      </div>
+      <div class="lo-actions">
+        <button class="lo-offset" id="lyrMinus" title="歌词提前 0.5 秒">−0.5</button>
+        <span class="lo-offset-label" id="lyrOffsetLabel">0.0s</span>
+        <button class="lo-offset" id="lyrPlus" title="歌词延后 0.5 秒">+0.5</button>
+      </div>
+    </header>
+    <div class="lo-stage" id="loStage">
+      <div class="lo-lines" id="loLines"></div>
+    </div>
+    <footer class="lo-foot">
+      <span class="lo-hint">上下拖动歌词，松手从那一句开始放</span>
+      <div class="lo-progress"><i id="loProgress"></i></div>
+      <div class="lo-controls">
+        <button class="lo-ctl" id="loPrev" title="上一首" aria-label="上一首"><svg class="icon"><use href="#i-prev"/></svg></button>
+        <button class="lo-ctl lo-ctl-play" id="loPlay" title="播放 / 暂停" aria-label="播放">
+          <svg class="icon"><use id="loPlayIcon" href="#i-pause"/></svg>
+        </button>
+        <button class="lo-ctl" id="loNext" title="下一首" aria-label="下一首"><svg class="icon"><use href="#i-next"/></svg></button>
+      </div>
+      <span class="lo-time" id="loTime">0:00 / 0:00</span>
+    </footer>
+  </div>
+
+  <!-- 无边框窗口的常驻拖动条：歌词铺满时顶栏被盖住，就靠这条拖窗口 -->
+  <div class="win-drag" id="winDragBar" hidden></div>
+
+  <div class="onboard-overlay" id="onboardOverlay" aria-hidden="true">
+    <div class="onboard-card" role="dialog" aria-modal="true" aria-labelledby="onboardTitle">
+      <header class="onboard-head">
+        <div>
+          <span class="eyebrow">首次启动 · GETTING STARTED</span>
+          <h2 id="onboardTitle">把大肥鱼配好，再开始听</h2>
+        </div>
+        <button class="round small" id="closeOnboard" title="关闭"><svg class="icon"><use href="#i-close"/></svg></button>
+      </header>
+
+      <ol class="onboard-list">
+        <li class="onboard-step" id="obStepLib">
+          <span class="ob-num">1</span>
+          <div class="ob-main">
+            <div class="ob-title"><strong>选一个音乐文件夹</strong><span class="ob-pill" id="obLibState">未扫描</span></div>
+            <p class="ob-desc" id="obLibHint">本地曲库不需要登录，扫完就能播。</p>
+            <div class="ob-inline">
+              <button class="ghost" id="obPickFolder">选择目录</button>
+              <input id="obPath" type="text" placeholder="或粘贴文件夹路径，例如 D:\Music" spellcheck="false" autocomplete="off" />
+              <button class="ghost" id="obAddFolder">添加并扫描</button>
+            </div>
+          </div>
+        </li>
+
+        <li class="onboard-step" id="obStepQq">
+          <span class="ob-num">2</span>
+          <div class="ob-main">
+            <div class="ob-title"><strong>连接 QQ 音乐</strong><span class="ob-pill" id="obQqState">未连接</span></div>
+            <p class="ob-desc">点按钮会打开浏览器窗口，用 QQ 或微信扫码，扫完自动回到这里。</p>
+            <div class="ob-inline">
+              <button class="solid" id="obLogin">扫码登录</button>
+              <span class="ob-note" id="obLoginNote"></span>
+            </div>
+          </div>
+        </li>
+
+        <li class="onboard-step is-disabled" id="obStepNetease">
+          <span class="ob-num">3</span>
+          <div class="ob-main">
+            <div class="ob-title"><strong>连接网易云（可选）</strong><span class="ob-pill">未接入</span></div>
+            <p class="ob-desc">这一版先只接 QQ 音乐，网易云和酷狗排在后面。</p>
+          </div>
+        </li>
+      </ol>
+
+      <footer class="onboard-foot">
+        <span class="ob-foot-hint">本地曲库不需要登录，可以随时跳过。</span>
+        <div class="ob-foot-actions">
+          <button class="ghost" id="obSkip">先跳过，进播放器</button>
+          <button class="solid" id="obDone">开始使用</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="settingsOverlay" aria-hidden="true">
+    <div class="modal-card settings-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <header class="modal-head">
+        <div>
+          <span class="eyebrow">SETTINGS</span>
+          <h2 id="settingsTitle">设置</h2>
+        </div>
+        <button class="round small" id="closeSettings" title="关闭"><svg class="icon"><use href="#i-close"/></svg></button>
+      </header>
+      <div class="settings-body">
+        <section class="settings-section">
+          <div class="settings-title"><h3>曲库目录</h3><span id="settingsRootCount" class="muted">—</span></div>
+          <div class="settings-roots" id="settingsRoots"></div>
+          <div class="settings-add">
+            <input id="settingsPath" type="text" placeholder="粘贴文件夹路径，例如 D:\Music" spellcheck="false" autocomplete="off" />
+            <button class="ghost" id="settingsPick">选择</button>
+            <button class="solid" id="settingsAdd">添加并扫描</button>
+          </div>
+          <div class="settings-actions" style="margin-top:6px">
+            <button class="ghost" id="settingsScan">立即扫描曲库</button>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <div class="settings-title"><h3>数据备份</h3><span id="settingsBackupDir" class="muted">—</span></div>
+          <div class="settings-actions">
+            <button class="solid" id="backupNow">立即备份</button>
+            <button class="ghost" id="openBackups">打开备份目录</button>
+          </div>
+          <div class="backup-list" id="backupList"></div>
+        </section>
+
+        <section class="settings-section">
+          <div class="settings-title"><h3>外观</h3></div>
+          <div class="settings-row"><span>玻璃拟态</span><button class="ghost" id="settingsGlass">切换</button></div>
+        </section>
+
+        <section class="settings-section" id="pierceSection">
+          <div class="settings-title"><h3>桌面透视</h3><span class="muted" id="pierceHint">仅桌面版生效</span></div>
+          <div class="settings-row">
+            <span>模式</span>
+            <div class="pierce-modes" id="pierceModes">
+              <button type="button" data-pierce="off">关闭</button>
+              <button type="button" data-pierce="clear">清晰</button>
+              <button type="button" data-pierce="acrylic">磨砂</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <span>蒙层浓度（0 = 全透）</span>
+            <div class="pierce-range">
+              <input type="range" id="pierceAlpha" min="0" max="90" step="2" value="62" />
+              <span id="pierceAlphaLabel">62%</span>
+              <button type="button" class="ghost pierce-clear" id="pierceClear">全透</button>
+            </div>
+          </div>
+          <p class="settings-note" id="pierceNote" hidden>磨砂走 Windows 11 系统亚克力；系统关闭「透明效果」时会退化成清晰透视。</p>
+        </section>
+
+        <section class="settings-section">
+          <div class="settings-title"><h3>播放与歌词</h3></div>
+          <div class="settings-row">
+            <span>默认音量</span>
+            <div class="settings-range">
+              <input type="range" id="settingsVolume" min="0" max="100" step="5" value="80" />
+              <span id="settingsVolumeLabel">80%</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <span>歌词字号</span>
+            <div class="settings-range">
+              <input type="range" id="settingsLyric" min="80" max="140" step="10" value="100" />
+              <span id="settingsLyricLabel">100%</span>
+            </div>
+          </div>
+          <p class="settings-note">默认音量是下次启动时用的音量；歌词字号只影响歌词页。</p>
+        </section>
+
+        <section class="settings-section">
+          <div class="settings-title"><h3>快捷键</h3><span class="muted">窗口有焦点时生效</span></div>
+          <div class="shortcut-list" id="shortcutList"></div>
+        </section>
+
+        <section class="settings-section">
+          <div class="settings-title"><h3>项目路线图</h3><span class="muted" id="settingsRoadmapPct">—</span></div>
+          <p class="settings-note" id="settingsRoadmapNext">—</p>
+          <div class="settings-actions">
+            <button class="ghost" id="settingsRoadmapOpen">查看路线图</button>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <div class="settings-title"><h3>关于</h3></div>
+          <div class="settings-about" id="settingsAbout">正在读取…</div>
+        </section>
+      </div>
+      <footer class="modal-foot">
+        <span class="muted">设置保存在本地</span>
+        <button class="ghost" id="closeSettings2">关闭</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="accountOverlay" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+      <header class="modal-head">
+        <div>
+          <span class="eyebrow">ACCOUNTS</span>
+          <h2 id="accountTitle">账号与连接</h2>
+        </div>
+        <button class="round small" id="closeAccount" title="关闭"><svg class="icon"><use href="#i-close"/></svg></button>
+      </header>
+      <div class="account-list" id="accountList"></div>
+      <footer class="modal-foot">
+        <button class="ghost" id="replayOnboard">重新查看启动引导</button>
+        <span class="muted" id="accountUpdated">—</span>
+      </footer>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="nameOverlay" aria-hidden="true">
+    <div class="modal-card name-card" role="dialog" aria-modal="true" aria-labelledby="nameTitle">
+      <header class="modal-head">
+        <div>
+          <span class="eyebrow">PLAYLIST</span>
+          <h2 id="nameTitle">新建歌单</h2>
+        </div>
+        <button class="round small" id="closeName" title="关闭"><svg class="icon"><use href="#i-close"/></svg></button>
+      </header>
+      <input class="name-input" id="nameInput" type="text" maxlength="60" placeholder="给歌单起个名字" autocomplete="off" />
+      <footer class="modal-foot">
+        <span class="muted" id="nameHint">只存在本地，不会改动 QQ 音乐</span>
+        <button class="solid" id="nameOk">确定</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="qqImportOverlay" aria-hidden="true">
+    <div class="modal-card import-card" role="dialog" aria-modal="true" aria-labelledby="qqImportTitle">
+      <header class="modal-head">
+        <div>
+          <span class="eyebrow">QQ MUSIC · PLAYLISTS</span>
+          <h2 id="qqImportTitle">导入 QQ 歌单</h2>
+        </div>
+        <button class="round small" id="closeQqImport" title="关闭"><svg class="icon"><use href="#i-close"/></svg></button>
+      </header>
+      <div class="import-body">
+        <div class="import-list" id="qqPlaylistList"></div>
+        <div class="import-preview" id="qqPlaylistPreview">
+          <p class="import-empty">在左边选一个歌单，先看看曲目</p>
+        </div>
+      </div>
+      <footer class="modal-foot">
+        <span id="qqImportStatus">只复制到本地歌单，不会改动 QQ 音乐里的内容</span>
+      </footer>
+    </div>
+  </div>
+
+  <div class="qr-overlay" id="qrOverlay" aria-hidden="true">
+    <div class="qr-card" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+      <h3 id="qrTitle">网易云扫码登录</h3>
+      <img class="qr-img" id="qrImg" alt="网易云登录二维码" />
+      <p class="qr-status" id="qrStatus">打开网易云 App → 扫一扫</p>
+      <div class="qr-actions">
+        <button class="ghost" id="qrRefresh">换一张</button>
+        <button class="ghost" id="qrClose">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="confirm-overlay" id="confirmOverlay" aria-hidden="true">
+    <div class="confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <h3 id="confirmTitle">删除这首歌？</h3>
+      <p id="confirmText">—</p>
+      <div class="confirm-actions">
+        <button class="ghost" id="confirmCancel">取消</button>
+        <button class="solid" id="confirmOk">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <audio id="audio" preload="metadata"></audio>
+  <audio id="audio-b" preload="metadata" aria-hidden="true" hidden></audio>
+
+  <!-- 侧栏收起后的召回钮：贴在左边缘中间，不跟顶栏抢位置 -->
+  <button class="sidebar-show" id="sidebarShowBtn" title="显示侧栏" aria-label="显示侧栏" hidden>
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 8h9" />
+      <path d="M8.5 4.5 12 8l-3.5 3.5" />
+    </svg>
+  </button>
+
+  <div class="win-controls" id="winControls" hidden>
+    <button type="button" data-win="minimize" title="最小化" aria-label="最小化">
+      <svg viewBox="0 0 16 16"><path d="M4 8h8" /></svg>
+    </button>
+    <button type="button" data-win="fullscreen" title="全屏（整块界面铺满屏幕）" aria-label="全屏">
+      <svg viewBox="0 0 16 16"><path d="M6 3H3v3M10 3h3v3M6 13H3v-3M10 13h3v-3" /></svg>
+    </button>
+    <button type="button" data-win="hide" title="收进托盘（音乐继续播放）" aria-label="收进托盘">
+      <svg viewBox="0 0 16 16"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" /></svg>
+    </button>
+  </div>
+
+  <script type="module" src="/assets/js/app.js"></script>
+</body>
+</html>

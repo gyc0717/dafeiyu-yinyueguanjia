@@ -1,0 +1,43 @@
+# ---- Python ----
+.venv/
+__pycache__/
+*.pyc
+wheels/
+*.whl
+
+# ---- 运行时数据：私人曲库、登录态、口令，绝不进仓库 ----
+data/*
+!data/config.json
+!data/roadmap.json
+
+# ---- Node / Electron 产物与缓存 ----
+node_modules/
+dist/
+build/
+desktop/node_modules/
+desktop/*.zip
+desktop/.electron-profile/
+.electron-cache/
+.electron-builder-cache/
+.npm-cache/
+profile/
+
+# ---- 工具与临时产物 ----
+tools/
+.local/
+.tmp*/
+.edge-*/
+.edge-profile/
+_shots/
+_archive_staging/
+_backup/
+_archive/
+*.log
+_probe*.txt
+_test.whl
+_fastapi*.whl
+
+# ---- 系统 ----
+Thumbs.db
+desktop.ini
+.DS_Store

@@ -1,0 +1,182 @@
+/* 桌面透视（仅 Electron 壳）：窗口透明 + 面板蒙层。
+ * 两种模式：
+ *   清晰（clear）   —— 桌面清晰可见，深色蒙层保证文字可读；
+ *   磨砂（acrylic） —— 由主进程 win.setBackgroundMaterial("acrylic") 画系统亚克力。
+ * 变量 --pierce-alpha 由设置页滑块控制（0.40–0.90，越大越不透明）。
+ */
+
+/* 关闭透视时页面必须自己铺不透明底，否则透明窗口会让桌面从半透明面板下透出来 */
+html:not([data-pierce="on"]) body {
+  background: var(--bg, #07090d) !important;
+}
+
+html[data-pierce="on"],
+html[data-pierce="on"] body {
+  background: transparent !important;
+}
+html[data-pierce="on"] .ambient,
+html[data-pierce="on"] .grain {
+  display: none;
+}
+
+/* 侧栏 / 主区给一层深色蒙层；模糊交给系统亚克力，不用页面 backdrop-filter */
+html[data-pierce="on"] .sidebar {
+  background: rgba(8, 12, 18, var(--pierce-alpha, 0.62)) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+html[data-pierce="on"] .main {
+  background: rgba(6, 9, 14, var(--pierce-alpha, 0.62));
+  border-radius: var(--radius);
+}
+
+/* 无边框窗口没有系统阴影，用一圈细边标出窗口边界 */
+html[data-pierce="on"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  z-index: 90;
+}
+html[data-pierce="on"] .topbar {
+  background: transparent;
+}
+
+/* 弹窗/抽屉保持更实的底，避免文字压在壁纸上 */
+html[data-pierce="on"] .drawer,
+html[data-pierce="on"] .modal-card,
+html[data-pierce="on"] .roadmap-card {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* 星海跟随透明：星图的底也交给桌面壳 */
+html[data-pierce="on"] .sfp-stage {
+  background: transparent !important;
+}
+
+/* 桌面壳：无边框窗口的拖动区与右上角原生按钮留白 */
+body.mh-desktop .topbar {
+  -webkit-app-region: drag;
+  /* 右上角是窗口按钮（− □ ✕），顶栏按钮整体左移，别钻到它们下面 */
+  padding-right: 128px;
+  position: relative;
+}
+body.mh-desktop .top-actions {
+  margin-left: auto;
+}
+body.mh-desktop .topbar button,
+body.mh-desktop .topbar input,
+body.mh-desktop .top-actions {
+  -webkit-app-region: no-drag;
+}
+body.mh-desktop .brand {
+  -webkit-app-region: drag;
+}
+
+/* 自绘窗口按钮（最大化后原生 overlay 会消失，不用它） */
+.win-controls {
+  display: flex;
+  gap: 2px;
+  margin-left: 8px;
+  -webkit-app-region: no-drag;
+}
+body.mh-desktop .win-controls {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  z-index: 400;
+  margin: 0;
+  transform: none;
+}
+.win-controls[hidden] { display: none; }
+.win-controls button {
+  width: 34px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #dbe7f5;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(8, 12, 18, 0.88);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+.win-controls button svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.win-controls button:hover { color: #fff; background: rgba(255, 255, 255, 0.12); }
+.win-controls button[data-win="close"]:hover { color: #ffd7da; background: rgba(229, 100, 110, 0.18); }
+
+/* 设置页：透视模式分段按钮 + 滑块 */
+.pierce-modes {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line);
+}
+.pierce-modes button {
+  height: 26px;
+  padding: 0 11px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.pierce-modes button:hover {
+  color: var(--text);
+}
+.pierce-modes button.active {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.09);
+}
+.pierce-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.pierce-range input[type="range"] {
+  width: 120px;
+  accent-color: var(--acc);
+}
+.pierce-range span {
+  min-width: 34px;
+  text-align: right;
+  font-size: 10.5px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.pierce-clear {
+  height: 24px;
+  padding: 0 9px;
+  font-size: 10.5px;
+  border-radius: 7px;
+}
+#pierceToggleBtn svg {
+  width: 16px;
+  height: 16px;
+}
+#pierceToggleBtn.active {
+  color: var(--acc);
+  border-color: var(--acc-line-soft);
+}
+.settings-note {
+  margin: 6px 2px 0;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+
+/* 说明：这里曾经把 .hero / .main / .sidebar 整块设成 -webkit-app-region: drag 来拖窗口，
+ * 结果这些区域里的滚轮滚动被 Chromium 吞掉了（列表、首页都滑不动）。已撤掉：
+ * 拖窗口只保留顶栏和 brand 两处原生拖动区，另外空白处还可以右键按住拖（见 app.js）。 */

@@ -1,0 +1,34 @@
+{
+  "updated_at": "2026-11-12",
+  "next": "酷狗扫码（卡 20006 参数）；app.js 拆模块；electron-builder 安装包（本机缺 npm）",
+  "milestones": [
+    {
+      "id": 1,
+      "name": "本地曲库 · 播放 · 歌词 · 记录",
+      "percent": 100,
+      "status": "done",
+      "detail": "46 首本地曲库；播放 / 无缝切歌 / 断点续播 / 逐字歌词 / 队列 / play_events 已验收"
+    },
+    {
+      "id": 2,
+      "name": "在线音源（QQ / 网易云 / 酷狗）",
+      "percent": 82,
+      "status": "active",
+      "detail": "QQ 全通；网易云全通：搜索 / 128k-320k 播放 / 歌词 / 扫码登录（DPAPI 加密）/ 我的歌单（含 2183 首分页加载）；酷狗只通了搜索，登录卡在 20006"
+    },
+    {
+      "id": 3,
+      "name": "歌单管理 · 整理工作流",
+      "percent": 85,
+      "status": "active",
+      "detail": "歌单管理 + 删除键（回收站 / 移出曲库）+ 跨平台同曲归并（work_key，收藏按首算）；整理：探针体检 + 断点续跑 + run_id 撤销 + CSV 已全；还差整理页历史行的界面验证"
+    },
+    {
+      "id": 4,
+      "name": "聊天 · 记忆 · 周报 · 手机 · 套壳",
+      "percent": 68,
+      "status": "active",
+      "detail": "桌面壳强化（托盘 / 全屏 / 拖拽 / 窗口记忆）；手机端底部导航 + 播放页优先；设置页全（备份二次确认 / 默认音量 / 歌词字号 / 快捷键 / 路线图收纳）；后端 sidecar 已 PyInstaller 打包并实测；electron-builder 配置就绪但本机缺 npm；仍缺聊天、记忆"
+    }
+  ]
+}

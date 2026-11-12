@@ -1,0 +1,64 @@
+{
+  "name": "dafeiyu-music-hub",
+  "productName": "大肥鱼音乐管家",
+  "version": "0.2.1",
+  "description": "本地优先的音乐管家：曲库 / 播放 / 歌词 / 在线音源 / 整理",
+  "main": "desktop/main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.dafeiyu.musichub",
+    "productName": "大肥鱼音乐管家",
+    "directories": {
+      "app": ".",
+      "output": "dist/installer",
+      "buildResources": "packaging"
+    },
+    "files": [
+      "desktop/**/*",
+      "!desktop/node_modules/**",
+      "!desktop/**/*.zip",
+      "!desktop/.electron-profile/**",
+      "!desktop/*.log",
+      "!desktop/pnpm-lock.yaml"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/music-hub-server",
+        "to": "backend"
+      },
+      {
+        "from": "web",
+        "to": "backend/web"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "packaging/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "大肥鱼音乐管家",
+      "deleteAppDataOnUninstall": false
+    }
+  },
+  "devDependencies": {
+    "electron": "28.3.3",
+    "electron-builder": "^24.13.3"
+  }
+}

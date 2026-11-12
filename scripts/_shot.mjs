@@ -1,0 +1,13 @@
+﻿import { writeFileSync } from "node:fs";
+const t = await (await fetch('http://127.0.0.1:9333/json/list')).json();
+const p = t.find(x => x.type === 'page');
+const ws = new WebSocket(p.webSocketDebuggerUrl);
+await new Promise(r => ws.onopen = r);
+let id = 0; const w = new Map();
+ws.onmessage = e => { const m = JSON.parse(e.data); if (w.has(m.id)) { w.get(m.id)(m.result); w.delete(m.id); } };
+const send = (method, params = {}) => new Promise(res => { const n = ++id; w.set(n, res); ws.send(JSON.stringify({ id: n, method, params })); });
+await send('Page.enable');
+const shot = await send('Page.captureScreenshot', { format: 'png' });
+writeFileSync('_shots/151-netease-playlists.png', Buffer.from(shot.data, 'base64'));
+console.log('ok');
+ws.close(); process.exit(0);

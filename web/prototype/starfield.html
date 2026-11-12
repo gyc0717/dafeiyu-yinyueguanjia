@@ -1,0 +1,1222 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>大肥鱼 · 星海原型</title>
+<style>
+:root{
+  --bg:#07090d; --surface:#0f151d; --surface-2:#141d28; --line:#1e2937;
+  --text:#e6edf6; --text-2:#8fa3bb; --text-3:#5b6c80;
+  --acc:#5aa2ff; --acc-strong:#2f6bb0; --ok:#4fd1a5; --warn:#f0a35e; --danger:#e5646e;
+  --local:#f0a35e; --qq:#5aa2ff; --ne:#e5646e; --kg:#4fd1a5;
+  --r-sm:8px; --r-md:12px; --r-lg:16px;
+  --ease:cubic-bezier(.3,.8,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;font-size:14px;line-height:1.55;overflow:hidden;-webkit-font-smoothing:antialiased}
+/* 被主程序嵌入且开启桌面透视时，body/面板一起变透明 */
+html[data-pierce="on"],
+html[data-pierce="on"] body{background:transparent!important}
+html[data-pierce="on"]{
+  --surface:rgba(8,12,18,var(--pierce-alpha,.62));
+  --surface-2:rgba(12,18,27,calc(var(--pierce-alpha,.62) + .04));
+}
+html[data-pierce="on"] .teaser{background:rgba(6,9,14,var(--pierce-alpha,.62))}
+html[data-pierce="on"] #view-starfield{background:transparent}
+html[data-pierce="on"] .playbar{background:rgba(8,12,18,calc(var(--pierce-alpha,.62) + .12))}
+html[data-pierce="on"] .rail{background:transparent}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#1c2735;border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+
+.rail{position:fixed;inset:0 auto 0 0;width:72px;background:#090d12;border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:4px;z-index:40;transition:transform .28s var(--ease)}
+body.rail-hidden .rail{transform:translateX(-100%)}
+.rail-toggle{width:40px;height:28px;border-radius:8px;border:1px solid var(--line);color:var(--text-3);font-size:12px;line-height:1;margin-top:4px}
+.rail-toggle:hover{color:var(--text);border-color:#34507a;background:var(--surface-2)}
+.rail-show{position:fixed;left:12px;top:14px;z-index:60;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:rgba(10,15,22,.9);color:var(--text-2);display:none;place-items:center;font-size:15px;cursor:pointer;box-shadow:0 8px 30px -12px #000;backdrop-filter:blur(10px)}
+.rail-show:hover{color:var(--text);border-color:#34507a}
+body.rail-hidden .rail-show{display:grid}
+body.rail-hidden .stage{left:0}
+body.rail-hidden .playbar{left:0}
+/* 嵌入主程序时：隐藏原型自己的左栏，只保留 dashboard */
+body.embed .rail,
+body.embed .rail-show,
+body.embed .rail-toggle{display:none!important}
+body.embed .stage{left:0}
+body.embed .playbar{left:0}
+.logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#2b6cb0,#1b3a5c);display:grid;place-items:center;font-size:18px;margin-bottom:8px;box-shadow:0 8px 24px -10px #5aa2ff}
+.nav{width:58px;padding:8px 0;border-radius:11px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-3);font-size:10.5px;transition:all var(--ease) 160ms}
+.nav .ico{font-size:17px;line-height:1}
+.nav:hover{color:var(--text-2)}
+.nav.on{background:var(--surface-2);color:var(--text);border:1px solid var(--line)}
+.nav.on .ico{color:var(--acc)}
+.rail .spacer{flex:1}
+.rail .mini-note{font-size:9px;color:var(--text-3);writing-mode:vertical-rl;letter-spacing:.12em;opacity:.7}
+
+.stage{position:absolute;inset:0 0 78px 72px;overflow:hidden;transition:left .28s var(--ease)}
+.view{position:absolute;inset:0;overflow:auto;display:none}
+.view.on{display:block}
+.page{max-width:1180px;margin:0 auto;padding:30px 36px 48px}
+
+/* common */
+.kicker{font-size:10.5px;letter-spacing:.22em;color:var(--acc);font-weight:600}
+h1{font-size:26px;font-weight:600;letter-spacing:-.4px;line-height:1.25}
+h2{font-size:17px;font-weight:600}
+.sub{color:var(--text-2);font-size:12.5px;margin-top:5px}
+.dim{color:var(--text-3)}
+.small{font-size:12px}
+.row{display:flex;align-items:center;gap:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 14px;border-radius:10px;border:1px solid var(--line);color:var(--text-2);font-size:12.5px;transition:all var(--ease) 160ms}
+.btn:hover{color:var(--text);border-color:#34507a}
+.btn.pri{background:var(--acc-strong);border-color:#3f82cf;color:#f2f7ff}
+.btn.pri:hover{background:#3a7ac4}
+.btn.ghost{border-color:transparent}
+.chip{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:999px;border:1px solid var(--line);font-size:10.5px;color:var(--text-2);white-space:nowrap}
+.chip i{width:6px;height:6px;border-radius:50%;background:var(--text-3);display:block}
+.chip.local i{background:var(--local)} .chip.qq i{background:var(--qq)} .chip.ne i{background:var(--ne)} .chip.kg i{background:var(--kg)}
+.chip.off{opacity:.45}
+.badge{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 7px;border-radius:5px;font-size:9.5px;border:1px solid #2a3a4d;color:var(--text-2)}
+.badge.local{color:var(--local);border-color:rgba(240,163,94,.35)} .badge.qq{color:var(--qq);border-color:rgba(90,162,255,.35)}
+.badge.ne{color:var(--ne);border-color:rgba(229,100,110,.35)} .badge.kg{color:var(--kg);border-color:rgba(79,209,165,.35)}
+.badge.mock{color:var(--text-3);border-color:var(--line)}
+
+/* home */
+.topline{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.hero{display:grid;grid-template-columns:1.18fr .82fr;gap:16px;margin-top:22px}
+.now{position:relative;overflow:hidden;display:flex;gap:18px;align-items:center;min-height:188px;padding:20px}
+.now .glow{position:absolute;inset:0;background:radial-gradient(260px 180px at 14% 40%,rgba(90,162,255,.22),transparent 70%);pointer-events:none}
+.now .cover{position:relative;width:128px;height:128px;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#24384f,#141d28);flex:none;box-shadow:0 20px 50px -22px #000}
+.now .cover img{width:100%;height:100%;object-fit:cover;display:block}
+.now .cover .fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:38px;color:rgba(230,237,246,.25)}
+.now .meta{position:relative;flex:1;min-width:0}
+.now h3{font-size:21px;font-weight:600;margin:3px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.now .line{font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:4px;border-radius:99px;background:#24303f;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--acc);border-radius:99px;transition:width .15s linear}
+.times{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-3);margin-top:5px}
+.now .controls{display:flex;gap:6px;margin-top:10px;align-items:center}
+.ctrl{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--text-2);font-size:13px}
+.ctrl:hover{background:var(--surface-2);color:var(--text)}
+.ctrl.play{width:42px;height:42px;background:#eaf3ff;color:#0b1017;font-size:16px;margin:0 6px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.act{position:relative;overflow:hidden;text-align:left;padding:16px;border-radius:12px;background:var(--surface);border:1px solid var(--line);transition:all var(--ease) 180ms;min-height:88px}
+.act:hover{border-color:#34507a;background:var(--surface-2);transform:translateY(-1px)}
+.act .k{font-size:15px;color:var(--acc)}
+.act b{display:block;font-size:13.5px;margin:9px 0 2px;font-weight:600}
+.act span{font-size:10.5px;color:var(--text-3)}
+.act .arrow{position:absolute;right:14px;top:14px;color:var(--text-3);font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.stat em{font-style:normal;font-size:10.5px;color:var(--text-3);display:block;margin-bottom:3px}
+.stat b{font-size:22px;font-weight:600;letter-spacing:-.3px}
+.stat b small{font-size:10.5px;color:var(--text-3);font-weight:400;margin-left:3px}
+.teaser{position:relative;margin-top:14px;height:178px;border-radius:16px;border:1px solid var(--line);overflow:hidden;background:#080c12;display:flex;align-items:center}
+.teaser canvas{position:absolute;inset:0;width:100%;height:100%}
+.teaser .copy{position:relative;z-index:2;padding:0 26px;max-width:430px;background:linear-gradient(90deg,rgba(7,9,13,.92),rgba(7,9,13,.4) 75%,transparent);height:100%;display:flex;flex-direction:column;justify-content:center}
+.teaser h2{font-size:18px}
+.teaser p{font-size:11.5px;color:var(--text-2);line-height:1.7;margin:6px 0 12px}
+.teaser .btn{align-self:flex-start}
+.recent{margin-top:14px}
+.li{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid #131b24;font-size:12.5px;color:var(--text-2)}
+.li:last-child{border:none}
+.li .t{margin-left:auto;font-size:10.5px;color:var(--text-3);white-space:nowrap}
+.li .dot{width:6px;height:6px;border-radius:50%;background:var(--acc);flex:none}
+
+/* starfield */
+#view-starfield{overflow:hidden;background:#05080d}
+#galaxy{position:absolute;inset:0;width:100%;height:100%;display:block}
+.sf-head{position:absolute;left:30px;right:30px;top:22px;z-index:5;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;pointer-events:none}
+.sf-head > *{pointer-events:auto}
+.sf-head h1{font-size:22px}
+.sf-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.sfilter{height:26px;padding:0 10px;border-radius:999px;border:1px solid var(--line);font-size:10.5px;color:var(--text-2);background:rgba(10,15,22,.55);backdrop-filter:blur(8px)}
+.sfilter.on{color:var(--text);border-color:#34507a;background:rgba(90,162,255,.12)}
+.sf-search{height:32px;width:190px;padding:0 11px;border-radius:9px;border:1px solid var(--line);background:rgba(10,15,22,.65);color:var(--text);font-size:11.5px;outline:none}
+.sf-search:focus{border-color:#34507a}
+.legend{position:absolute;right:30px;bottom:24px;z-index:5;display:flex;gap:12px;font-size:10px;color:var(--text-3);background:rgba(8,12,18,.55);border:1px solid var(--line);border-radius:999px;padding:6px 12px;backdrop-filter:blur(8px)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:6px;height:6px;border-radius:50%}
+.sf-hint{position:absolute;left:30px;bottom:24px;z-index:5;font-size:10px;color:var(--text-3);letter-spacing:.04em}
+.zoom-badge{position:absolute;right:30px;top:90px;z-index:5;font-size:10px;color:var(--text-3);background:rgba(8,12,18,.5);border:1px solid var(--line);padding:3px 8px;border-radius:999px}
+.hover-label{position:absolute;z-index:6;pointer-events:none;padding:4px 8px;border-radius:6px;background:rgba(8,12,18,.9);border:1px solid var(--line);font-size:11px;color:var(--text);white-space:nowrap;transform:translate(-50%,-140%);opacity:0;transition:opacity .12s}
+.hover-label.on{opacity:1}
+
+/* star card */
+.star-card{position:absolute;z-index:20;width:288px;background:rgba(13,19,28,.97);border:1px solid #26374d;border-radius:14px;box-shadow:0 26px 70px -24px #000;padding:12px;display:none;backdrop-filter:blur(18px)}
+.star-card.on{display:block}
+.star-card .top{display:flex;gap:11px;align-items:flex-start}
+.star-card .cover{width:66px;height:66px;border-radius:9px;overflow:hidden;flex:none;background:linear-gradient(145deg,#24384f,#141d28);position:relative}
+.star-card .cover img{width:100%;height:100%;object-fit:cover;display:block}
+.star-card .cover .fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:20px;color:rgba(230,237,246,.25)}
+.star-card h3{font-size:15px;font-weight:600;line-height:1.35;padding-right:16px}
+.star-card .meta{font-size:11px;color:var(--text-2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.star-card .rowline{display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.star-card .card-actions{display:flex;gap:6px;margin-top:11px}
+.star-card .card-actions .btn{flex:1;height:30px;font-size:11.5px}
+.star-card .close{position:absolute;right:9px;top:7px;width:22px;height:22px;border-radius:6px;color:var(--text-3)}
+.star-card .close:hover{background:var(--surface-2);color:var(--text)}
+.star-card .id{font-size:9px;color:var(--text-3);margin-top:7px;font-family:Consolas,monospace}
+
+/* library */
+.lib-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.lib-wrap{display:grid;grid-template-columns:220px 1fr;gap:18px;margin-top:18px}
+.groups{display:flex;flex-direction:column;gap:3px}
+.group{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;font-size:12.5px;color:var(--text-2);text-align:left}
+.group:hover{background:var(--surface-2)}
+.group.on{background:var(--surface-2);color:var(--text);border:1px solid var(--line)}
+.group .c{margin-left:auto;font-size:10px;color:var(--text-3)}
+.table{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.tr{display:grid;grid-template-columns:40px minmax(0,1.6fr) minmax(0,1fr) 74px 58px;gap:10px;align-items:center;padding:8px 14px;border-bottom:1px solid #131b24;font-size:12.5px;cursor:pointer}
+.tr:last-child{border:none}
+.tr:hover{background:#0d141c}
+.tr.sel{background:rgba(90,162,255,.08)}
+.tr .cv{width:32px;height:32px;border-radius:6px;overflow:hidden;background:linear-gradient(135deg,#24384f,#141d28);position:relative}
+.tr .cv img{width:100%;height:100%;object-fit:cover;display:block}
+.tr .cv .fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:rgba(230,237,246,.25)}
+.tr .tt{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr .ar{font-size:10.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr .al,.tr .du{font-size:10.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr .du{text-align:right}
+
+/* search */
+.search-box{display:flex;gap:8px;margin-top:16px}
+.search-box input{flex:1;height:42px;padding:0 14px;border-radius:11px;border:1px solid var(--line);background:var(--surface);color:var(--text);outline:none;font-size:13px}
+.search-box input:focus{border-color:#34507a;box-shadow:0 0 0 3px rgba(90,162,255,.08)}
+.results{margin-top:12px;display:flex;flex-direction:column;gap:2px}
+.res{display:grid;grid-template-columns:38px minmax(0,1fr) 100px 74px 92px;gap:10px;align-items:center;padding:9px 12px;border-radius:9px;border:1px solid transparent;cursor:pointer}
+.res:hover{background:var(--surface);border-color:var(--line)}
+.res .cv{width:32px;height:32px;border-radius:6px;overflow:hidden;background:linear-gradient(135deg,#24384f,#141d28);position:relative}
+.res .cv img{width:100%;height:100%;object-fit:cover;display:block}
+.res .cv .fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:rgba(230,237,246,.25)}
+.res .tt{font-size:12.5px}.res .ar{font-size:10.5px;color:var(--text-3)}
+.res .playbtn{justify-self:end}
+
+/* report */
+.report-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.bars{display:flex;align-items:flex-end;gap:12px;height:150px;margin-top:12px}
+.bars .day{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%}
+.bars .day i{display:block;width:100%;max-width:38px;border-radius:5px 5px 0 0;background:linear-gradient(180deg,#3d7cc0,#1f3a58)}
+.bars .day span{font-size:10px;color:var(--text-3)}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--text-2);padding:7px 0;border-bottom:1px dashed #182130}
+.kv:last-child{border:none}.kv b{color:var(--text);font-weight:500}
+.note{font-size:11px;color:var(--text-3);line-height:1.8;margin-top:8px}
+
+/* player bar */
+.playbar{position:fixed;left:72px;right:0;bottom:0;height:78px;z-index:45;background:rgba(10,15,22,.96);border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 18px;backdrop-filter:blur(18px);transition:left .28s var(--ease)}
+.playbar .cover{width:46px;height:46px;border-radius:7px;overflow:hidden;background:linear-gradient(145deg,#24384f,#141d28);position:relative;flex:none;cursor:pointer}
+.playbar .cover img{width:100%;height:100%;object-fit:cover;display:block}
+.playbar .cover .fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:16px;color:rgba(230,237,246,.25)}
+.playbar .info{min-width:0;width:220px;cursor:pointer}
+.playbar .info .t{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.playbar .info .a{font-size:10px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.playbar .center{flex:1;display:flex;align-items:center;gap:12px;min-width:0}
+.playbar .bar{flex:1;margin:0}
+.playbar .time{font-size:10px;color:var(--text-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.playbar .ctrl{width:30px;height:30px;font-size:12px}
+.playbar .ctrl.play{width:38px;height:38px;font-size:14px;margin:0}
+.playbar .platform{font-size:9.5px;color:var(--text-3);white-space:nowrap}
+
+/* player overlay */
+.player-overlay{position:fixed;inset:0;z-index:80;background:radial-gradient(900px 600px at 18% 10%,#101c2c,#05080d 62%);display:none}
+.player-overlay.on{display:block}
+.po-head{position:absolute;left:0;right:0;top:0;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:3}
+.po-body{display:grid;grid-template-columns:44% 56%;height:100%;padding:64px 0 40px}
+.po-left{padding:0 0 0 54px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.po-cover{width:290px;height:290px;border-radius:16px;overflow:hidden;background:linear-gradient(145deg,#24384f,#141d28);position:relative;box-shadow:0 30px 90px -30px #000,0 0 90px rgba(90,162,255,.12)}
+.po-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.po-cover .fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:56px;color:rgba(230,237,246,.22)}
+.po-title{font-size:28px;font-weight:600;line-height:1.3;margin-top:4px}
+.po-artist{font-size:13px;color:var(--text-2);margin-top:4px}
+.po-right{padding:0 60px 0 20px;display:flex;align-items:center;overflow:hidden}
+.po-lyrics{width:100%;height:70vh;overflow:hidden;position:relative;mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent)}
+.po-lyr{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:10px;transition:transform .45s var(--ease)}
+.po-ly{font-size:19px;line-height:1.6;color:#46586e;transition:color .3s,font-size .3s;padding:2px 0}
+.po-ly.on{color:#f2f7ff;font-size:24px;font-weight:600}
+.po-close{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);color:var(--text-2);display:grid;place-items:center}
+
+/* modal */
+.mask{position:fixed;inset:0;z-index:90;background:rgba(3,6,10,.76);display:none;place-items:center;backdrop-filter:blur(5px)}
+.mask.on{display:grid}
+.modal{width:620px;max-height:84vh;overflow:auto;background:#0e141c;border:1px solid #243246;border-radius:16px;padding:22px 24px;box-shadow:0 40px 120px -30px #000}
+.modal h3{font-size:17px}
+.steps{display:flex;gap:5px;margin:14px 0 18px}
+.steps div{flex:1;height:3px;border-radius:2px;background:#1d2735}
+.steps div.done{background:var(--acc)}
+.modal .mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.pv{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.pv th{text-align:left;color:var(--text-3);font-weight:400;font-size:10px;padding:6px 8px;border-bottom:1px solid var(--line)}
+.pv td{padding:7px 8px;border-bottom:1px solid #141c26;color:var(--text-2)}
+.toast{position:fixed;left:52%;bottom:94px;transform:translateX(-50%);z-index:120;background:rgba(16,24,38,.96);border:1px solid var(--line);border-radius:9px;padding:8px 14px;font-size:11.5px;color:var(--text);opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.on{opacity:1}
+
+@media (max-width: 900px){
+  .rail{inset:auto 0 0 0;width:100%;height:58px;flex-direction:row;justify-content:space-around;padding:0 4px;border-right:0;border-top:1px solid var(--line)}
+  .logo,.rail .mini-note,.rail .spacer,.rail-toggle,.rail-show{display:none}
+  body.rail-hidden .rail{transform:none}
+  body.rail-hidden .stage{left:0}
+  body.rail-hidden .playbar{left:0}
+  .nav{width:auto;flex:1;padding:4px 0;font-size:9px}
+  .stage{inset:0 0 58px 0}
+  .playbar{left:0;bottom:58px;height:64px;padding:0 12px}
+  .playbar .info{width:130px}
+  .playbar .platform{display:none}
+  .page{padding:20px 16px 40px}
+  .hero{grid-template-columns:1fr}
+  .now{min-height:160px}
+  .now .cover{width:100px;height:100px}
+  .stats{grid-template-columns:1fr 1fr}
+  .lib-wrap{grid-template-columns:1fr}
+  .groups{flex-direction:row;overflow:auto}
+  .group{white-space:nowrap}
+  .tr{grid-template-columns:32px minmax(0,1.5fr) 66px;gap:8px}
+  .tr .al,.tr .badge{display:none}
+  .star-card{position:fixed!important;left:12px!important;right:12px!important;top:auto!important;bottom:136px!important;width:auto}
+  .sf-head{left:14px;right:14px;top:14px;flex-direction:column;gap:8px}
+  .sf-tools{justify-content:flex-start}
+  .sf-search{width:140px}
+  .legend{display:none}
+  .sf-hint{left:14px;bottom:14px}
+  .po-body{grid-template-columns:1fr;padding:64px 0 20px;overflow:auto}
+  .po-left{padding:10px 24px 0;align-items:center}
+  .po-cover{width:220px;height:220px}
+  .po-right{padding:10px 24px 0;height:340px}
+  .po-lyrics{height:340px}
+  .modal{width:calc(100vw - 24px)}
+}
+.cover img, .cv img { position: absolute; inset: 0; z-index: 1; }
+.cover .fallback, .cv .fallback { z-index: 0; }
+.po-cover img { position: absolute; inset: 0; z-index: 1; }
+.po-cover .fallback { z-index: 0; }
+</style>
+</head>
+<body>
+<aside class="rail">
+  <div class="logo">🐟</div>
+  <button class="nav on" data-view="home"><span class="ico">⌂</span>首页</button>
+  <button class="nav" data-view="starfield"><span class="ico">✦</span>星海</button>
+  <button class="nav" data-view="library"><span class="ico">☰</span>曲库</button>
+  <button class="nav" data-view="search"><span class="ico">⌕</span>搜歌</button>
+  <button class="nav" data-view="report"><span class="ico">▤</span>周报</button>
+  <div class="spacer"></div>
+  <button class="rail-toggle" id="railToggle" title="隐藏左侧工具栏" aria-label="隐藏左侧工具栏">«</button>
+  <div class="mini-note">STARFIELD PROTOTYPE</div>
+</aside>
+<button class="rail-show" id="railShow" title="显示左侧工具栏" aria-label="显示左侧工具栏">»</button>
+
+<main class="stage">
+  <section class="view on" id="view-home">
+    <div class="page">
+      <div class="topline">
+        <div>
+          <div class="kicker">GOOD EVENING</div>
+          <h1>晚上好，大肥鱼</h1>
+          <div class="sub">今天听到现在 · 每颗星都是一首歌</div>
+        </div>
+        <div class="chips" id="statusChips"></div>
+      </div>
+
+      <div class="hero">
+        <div class="card now">
+          <div class="glow"></div>
+          <div class="cover" id="homeCover">
+            <div class="fallback">♪</div>
+          </div>
+          <div class="meta">
+            <div class="small dim" id="homeEyebrow">正在播放</div>
+            <h3 id="homeTitle">—</h3>
+            <div class="line" id="homeArtist">—</div>
+            <div class="bar" style="margin-top:12px"><i id="homeBar"></i></div>
+            <div class="times"><span id="homeCur">0:00</span><span id="homeDur">0:00</span></div>
+            <div class="controls">
+              <button class="ctrl" id="homePrev">⏮</button>
+              <button class="ctrl play" id="homePlay">▶</button>
+              <button class="ctrl" id="homeNext">⏭</button>
+              <button class="btn ghost" style="height:28px;margin-left:6px" id="homeOpen">打开播放页</button>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="act" data-go="starfield"><span class="k">✦</span><b>星海探索</b><span>点一颗星，听它的歌</span><span class="arrow">↗</span></button>
+          <button class="act" data-go="search"><span class="k">⌕</span><b>搜歌点播</b><span>本地 + QQ 在线</span><span class="arrow">↗</span></button>
+          <button class="act" data-go="library"><span class="k">☰</span><b>曲库管理</b><span>按平台看全部歌曲</span><span class="arrow">↗</span></button>
+          <button class="act" data-go="report"><span class="k">▤</span><b>本周报告</b><span>数字、柱状、TOP5</span><span class="arrow">↗</span></button>
+        </div>
+      </div>
+
+      <div class="stats" id="homeStats"></div>
+
+      <div class="teaser" id="teaser">
+        <canvas id="miniGalaxy"></canvas>
+        <div class="copy">
+          <div class="kicker">STARFIELD</div>
+          <h2 style="margin-top:6px">把曲库摊成一片星海</h2>
+          <p>颜色是平台，大小是时长，正在播放的那颗会呼吸。<br>点星看卡片，双击直接播。</p>
+          <button class="btn pri" data-go="starfield">进入星海 ↗</button>
+        </div>
+      </div>
+
+      <div class="card recent">
+        <div class="small dim" style="margin-bottom:2px">最近</div>
+        <div id="homeRecent"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-starfield">
+    <canvas id="galaxy"></canvas>
+    <div class="sf-head">
+      <div>
+        <div class="kicker">STARFIELD · LIVE LIBRARY</div>
+        <h1>星海</h1>
+        <div class="sub" id="sfSub">颜色 = 平台 · 大小 = 时长 · 点星看卡片</div>
+      </div>
+      <div class="sf-tools">
+        <button class="sfilter on" data-filter="all">全部</button>
+        <button class="sfilter" data-filter="local">本地</button>
+        <button class="sfilter" data-filter="qq">QQ</button>
+        <button class="sfilter off" data-filter="ne" disabled>网易云</button>
+        <button class="sfilter off" data-filter="kg" disabled>酷狗</button>
+        <input class="sf-search" id="sfSearch" placeholder="找一颗星…" />
+      </div>
+    </div>
+    <div class="zoom-badge" id="zoomBadge">100%</div>
+    <div class="hover-label" id="hoverLabel"></div>
+    <div class="legend">
+      <span><i style="background:var(--local)"></i>本地</span>
+      <span><i style="background:var(--qq)"></i>QQ 音乐</span>
+      <span style="opacity:.35"><i style="background:var(--ne)"></i>网易云</span>
+      <span style="opacity:.35"><i style="background:var(--kg)"></i>酷狗</span>
+    </div>
+    <div class="sf-hint">滚轮缩放 · 拖拽平移 · 点星看卡片 · 双击播放</div>
+    <div class="star-card" id="starCard">
+      <button class="close" id="starClose">✕</button>
+      <div class="top">
+        <div class="cover" id="cardCover"><div class="fallback">♪</div></div>
+        <div style="min-width:0">
+          <h3 id="cardTitle">—</h3>
+          <div class="meta" id="cardMeta">—</div>
+          <div class="rowline"><span class="badge" id="cardBadge">本地</span><span class="small dim" id="cardDur">0:00</span></div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn pri" id="cardPlay">播放</button>
+        <button class="btn" id="cardQueue">入队</button>
+        <button class="btn ghost" id="cardOpen">播放页</button>
+      </div>
+      <div class="id" id="cardId">—</div>
+    </div>
+  </section>
+
+  <section class="view" id="view-library">
+    <div class="page">
+      <div class="lib-head">
+        <div><div class="kicker">LIBRARY</div><h1>曲库</h1><div class="sub" id="libSub">—</div></div>
+        <div class="row"><button class="btn" id="organizeBtn">整理</button><button class="btn">导出</button></div>
+      </div>
+      <div class="lib-wrap">
+        <div class="groups" id="groups"></div>
+        <div class="table" id="libTable"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-search">
+    <div class="page">
+      <div class="kicker">SEARCH</div>
+      <h1>搜歌</h1>
+      <div class="sub">本地 + QQ 在线，点结果直接播</div>
+      <div class="search-box"><input id="searchInput" placeholder="歌名 / 歌手 / 专辑" /><button class="btn pri" id="searchBtn">搜索</button></div>
+      <div class="results" id="searchResults"></div>
+      <div class="note" id="searchNote">输入关键词过滤；原型里搜的是已加载的曲库和 QQ 结果。</div>
+    </div>
+  </section>
+
+  <section class="view" id="view-report">
+    <div class="page">
+      <div class="row" style="justify-content:space-between;align-items:flex-end">
+        <div><div class="kicker">WEEKLY</div><h1>本周听歌报告</h1><div class="sub">原型示意 · 基于当前数据</div></div>
+        <button class="btn">导出 PDF</button>
+      </div>
+      <div class="report-grid" id="reportStats"></div>
+      <div class="card" style="margin-top:12px">
+        <div class="small dim">每天播放（示意）</div>
+        <div class="bars" id="reportBars"></div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="small dim" style="margin-bottom:6px">TOP 5</div>
+        <div id="reportTop"></div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="small dim" style="margin-bottom:4px">建议</div>
+        <div style="font-size:12.5px;line-height:1.9">这周的星海偏本地和 QQ，晚上 22 点后还在听慢歌。<br>可以试试把「夜航」这类曲子收进一个夜间星团。</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="playbar">
+  <div class="cover" id="barCover"><div class="fallback">♪</div></div>
+  <div class="info" id="barInfo"><div class="t" id="barTitle">—</div><div class="a" id="barArtist">—</div></div>
+  <div class="center">
+    <button class="ctrl" id="barPrev">⏮</button>
+    <button class="ctrl play" id="barPlay">▶</button>
+    <button class="ctrl" id="barNext">⏭</button>
+    <div class="bar"><i id="barFill"></i></div>
+    <span class="time" id="barTime">0:00 / 0:00</span>
+  </div>
+  <span class="platform" id="barPlatform">—</span>
+</div>
+
+<div class="player-overlay" id="playerOverlay">
+  <div class="po-head">
+    <button class="po-close" id="poClose">←</button>
+    <div class="kicker">NOW PLAYING</div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="po-body">
+    <div class="po-left">
+      <div class="po-cover" id="poCover"><div class="fallback">♪</div></div>
+      <div><div class="po-title" id="poTitle">—</div><div class="po-artist" id="poArtist">—</div></div>
+      <div class="row"><span class="badge" id="poBadge">本地</span><span class="small dim" id="poSub">—</span></div>
+      <div class="row" style="margin-top:2px"><button class="btn" id="poPlay">播放</button><button class="btn ghost" id="poClose2">收起</button></div>
+    </div>
+    <div class="po-right"><div class="po-lyrics"><div class="po-lyr" id="poLyr"></div></div></div>
+  </div>
+</div>
+
+<div class="mask" id="organizeMask">
+  <div class="modal">
+    <div class="row" style="justify-content:space-between"><h3 id="orgTitle">整理「本地曲库」</h3><span class="small dim" id="orgStep">第 1 / 4 步</span></div>
+    <div class="steps" id="orgSteps"><div></div><div></div><div></div><div></div></div>
+    <div id="orgBody"></div>
+    <div class="mfoot" id="orgFoot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const PLATFORMS = {
+  local: { label: '本地', short: '本地', color: '#f0a35e', angle: 0.2, radius: 0.34 },
+  qq: { label: 'QQ 音乐', short: 'QQ', color: '#5aa2ff', angle: 2.1, radius: 0.72 },
+  ne: { label: '网易云', short: '网易', color: '#e5646e', angle: 3.9, radius: 0.55 },
+  kg: { label: '酷狗', short: '酷狗', color: '#4fd1a5', angle: 5.2, radius: 0.62 },
+};
+const state = {
+  view: 'home', tracks: [], stars: [], current: null, queue: [], index: -1,
+  filter: 'all', query: '', camera: { x: 0, y: 0, scale: 1 },
+  hover: null, selected: null, dragging: false, dragMoved: 0,
+  stats: {}, recent: [], lyrics: [], lyricId: null, orgStep: 1,
+};
+
+const audio = new Audio();
+audio.preload = 'metadata';
+
+function fmt(ms) {
+  if (!Number.isFinite(ms) || ms <= 0) return '0:00';
+  const s = Math.floor(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+function hash(value) {
+  let h = 2166136261;
+  for (const ch of String(value)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+  return Math.abs(h);
+}
+function platformOf(track) { return PLATFORMS[track.provider] ? track.provider : 'local'; }
+function platformMeta(track) { return PLATFORMS[platformOf(track)]; }
+function badge(track) {
+  const p = platformMeta(track);
+  return `<span class="badge ${platformOf(track)}">${p.short}</span>`;
+}
+function toast(text) {
+  const el = $('#toast'); el.textContent = text; el.classList.add('on');
+  clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on'), 2200);
+}
+
+async function api(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+function buildStars() {
+  const groups = {};
+  for (const track of state.tracks) {
+    const key = platformOf(track);
+    (groups[key] = groups[key] || []).push(track);
+  }
+  const stars = [];
+  for (const [key, list] of Object.entries(groups)) {
+    const meta = PLATFORMS[key];
+    const inner = key === 'local' ? 0.18 : 0.62;
+    const spread = key === 'local' ? 0.52 : 0.55;
+    list.forEach((track, i) => {
+      const seed = hash(track.id);
+      const angle = i * 2.399 + meta.angle + ((seed % 100) / 100) * 0.55;
+      const radius = inner + ((seed >> 3) % 100) / 100 * spread;
+      const r = 2.2 + Math.min((track.duration_ms || 0) / 90000, 1) * 3.2;
+      stars.push({
+        ...track, key, color: meta.color,
+        nx: Math.cos(angle) * radius,
+        ny: Math.sin(angle) * radius * 0.78,
+        r, phase: (seed % 1000) / 1000 * Math.PI * 2,
+      });
+    });
+  }
+  state.stars = stars;
+}
+
+
+function makeDust() {
+  state.dust = Array.from({ length: 260 }, (_, i) => {
+    const seed = hash(`dust-${i}`);
+    return {
+      nx: ((seed % 2400) / 1000 - 1.2) * 1.08,
+      ny: (((seed >> 5) % 2400) / 1000 - 1.2) * 0.95,
+      r: 0.35 + ((seed >> 9) % 100) / 100 * 1.1,
+      phase: ((seed >> 3) % 1000) / 1000 * Math.PI * 2,
+      bright: 0.1 + ((seed >> 7) % 100) / 100 * 0.35,
+    };
+  });
+}
+
+function visibleStars() {
+  const q = state.query.trim().toLowerCase();
+  return state.stars.filter((s) => {
+    if (state.filter !== 'all' && s.key !== state.filter) return false;
+    if (!q) return true;
+    return `${s.title} ${s.artist} ${s.album}`.toLowerCase().includes(q);
+  });
+}
+
+function coverHTML(track, cls = '') {
+  const initial = (track.title || '♪').trim().charAt(0) || '♪';
+  const inner = track.cover_url
+    ? `<img src="${track.cover_url}" alt="" loading="lazy" onload="this.nextElementSibling&&this.nextElementSibling.remove()" onerror="this.remove()">`
+    : '';
+  return `<div class="${cls}">${inner}<div class="fallback">${initial}</div></div>`;
+}
+function setCover(el, track) {
+  el.innerHTML = `<div class="fallback">${(track.title || '♪').charAt(0)}</div>`;
+  if (track.cover_url) {
+    const img = document.createElement('img');
+    img.src = track.cover_url; img.alt = ''; img.loading = 'lazy';
+    img.onload = () => {
+      const fallback = el.querySelector('.fallback');
+      if (fallback) fallback.remove();
+    };
+    img.onerror = () => img.remove();
+    el.append(img);
+  }
+}
+
+/* ---------- data ---------- */
+async function loadData() {
+  try {
+    const [local, recent, stats] = await Promise.all([
+      api('/api/tracks?limit=1000'),
+      api('/api/recent?limit=12').catch(() => ({ items: [] })),
+      api('/api/stats/today').catch(() => ({ plays: 0, played_ms: 0 })),
+    ]);
+    state.tracks = local.items || [];
+    state.recent = recent.items || [];
+    state.stats = stats || {};
+  } catch (err) {
+    state.tracks = [
+      { id: -1, title: '夜航', artist: '大肥鱼', album: '深海电台', duration_ms: 150000, provider: 'local' },
+      { id: -2, title: '潮汐信', artist: '大肥鱼', album: '深海电台', duration_ms: 148000, provider: 'local' },
+      { id: -3, title: '晴天', artist: '周杰伦', album: '叶惠美', duration_ms: 269000, provider: 'qq' },
+    ];
+    toast('后端没连上，先看示意数据');
+  }
+  buildStars();
+  makeDust();
+  state.current = state.tracks.find((t) => t.provider === 'local') || state.tracks[0] || null;
+  renderAll();
+  loadOnline();
+}
+
+async function loadOnline() {
+  try {
+    const data = await api('/api/online/search?q=' + encodeURIComponent('晴天') + '&limit=18');
+    const seen = new Set(state.tracks.map((t) => `${t.provider}:${t.id}`));
+    for (const item of data.items || []) {
+      if (!seen.has(`qq:${item.id}`)) { state.tracks.push(item); seen.add(`qq:${item.id}`); }
+    }
+    buildStars();
+    renderAll();
+    $('#sfSub').textContent = `颜色 = 平台 · 大小 = 时长 · ${state.tracks.length} 颗星`;
+  } catch { /* offline is fine */ }
+}
+
+/* ---------- views ---------- */
+function go(view) {
+  state.view = view;
+  $$('.nav').forEach((n) => n.classList.toggle('on', n.dataset.view === view));
+  $$('.view').forEach((v) => v.classList.toggle('on', v.id === 'view-' + view));
+  if (view === 'starfield') { resize(); }
+  if (view === 'search') setTimeout(() => $('#searchInput').focus(), 50);
+}
+function renderAll() {
+  renderStatus();
+  renderNow();
+  renderStats();
+  renderRecent();
+  renderLibrary();
+  renderSearch();
+  renderReport();
+  renderBar();
+  resize();
+}
+
+function renderStatus() {
+  const local = state.tracks.filter((t) => platformOf(t) === 'local').length;
+  const qq = state.tracks.filter((t) => platformOf(t) === 'qq').length;
+  $('#statusChips').innerHTML = `
+    <span class="chip local"><i></i>本地 ${local}</span>
+    <span class="chip qq"><i></i>QQ ${qq || '未连接'}</span>
+    <span class="chip ne off"><i></i>网易云</span>
+    <span class="chip kg off"><i></i>酷狗</span>`;
+  $('#sfSub').textContent = `颜色 = 平台 · 大小 = 时长 · ${state.tracks.length} 颗星`;
+}
+
+function renderNow() {
+  const t = state.current;
+  if (!t) return;
+  setCover($('#homeCover'), t);
+  $('#homeEyebrow').textContent = `正在播放 · ${platformMeta(t).label}`;
+  $('#homeTitle').textContent = t.title;
+  $('#homeArtist').textContent = `${t.artist || '未知歌手'} · ${t.album || '未命名专辑'}`;
+  $('#homeDur').textContent = fmt(t.duration_ms);
+  $('#homeBar').style.width = `${audio.duration ? (audio.currentTime / audio.duration) * 100 : 0}%`;
+}
+
+function renderStats() {
+  const local = state.tracks.filter((t) => platformOf(t) === 'local').length;
+  const qq = state.tracks.filter((t) => platformOf(t) === 'qq').length;
+  const minutes = Math.round((state.stats.played_ms || 0) / 60000);
+  $('#homeStats').innerHTML = `
+    <div class="stat"><em>今日播放</em><b>${state.stats.plays || 0}<small>首</small></b></div>
+    <div class="stat"><em>今日时长</em><b>${minutes || 0}<small>分钟</small></b></div>
+    <div class="stat"><em>本地曲库</em><b>${local}<small>首</small></b></div>
+    <div class="stat"><em>QQ 在线</em><b>${qq || '—'}<small>首</small></b></div>`;
+  $('#reportStats').innerHTML = `
+    <div class="stat"><em>播放</em><b>${state.stats.plays || 0}<small>首</small></b></div>
+    <div class="stat"><em>时长</em><b>${minutes || 0}<small>分钟</small></b></div>
+    <div class="stat"><em>本地占比</em><b>${state.tracks.length ? Math.round(local / state.tracks.length * 100) : 0}<small>%</small></b></div>
+    <div class="stat"><em>星海</em><b>${state.stars.length}<small>颗</small></b></div>`;
+  const heights = [36, 58, 30, 76, 112, 88, 44];
+  $('#reportBars').innerHTML = heights.map((h, i) => `<div class="day"><i style="height:${h}px"></i><span>${'一二三四五六日'[i]}</span></div>`).join('');
+  const top = (state.recent.length ? state.recent : state.tracks).slice(0, 5);
+  $('#reportTop').innerHTML = top.map((t, i) => `<div class="kv"><span>${i + 1}　${t.title}</span><b>${t.plays || 1} 次</b></div>`).join('') || '<div class="note">还没有播放记录</div>';
+}
+
+function renderRecent() {
+  const list = state.recent.slice(0, 5);
+  $('#homeRecent').innerHTML = list.length
+    ? list.map((t) => `<div class="li"><span class="dot"></span><span>${t.title} · ${t.artist || ''}</span><span class="t">${t.last_played_at || ''}</span></div>`).join('')
+    : '<div class="note">还没有播放记录，点开一首歌就有了</div>';
+}
+
+function renderLibrary() {
+  const items = state.tracks;
+  const counts = {
+    local: items.filter((t) => platformOf(t) === 'local').length,
+    qq: items.filter((t) => platformOf(t) === 'qq').length,
+  };
+  $('#groups').innerHTML = `
+    <button class="group on"><span class="badge local">本地</span>本地曲库<span class="c">${counts.local}</span></button>
+    <button class="group"><span class="badge qq">QQ</span>QQ 音乐<span class="c">${counts.qq}</span></button>
+    <button class="group" style="opacity:.45"><span class="badge ne">网易</span>未接入<span class="c">0</span></button>
+    <button class="group" style="opacity:.45"><span class="badge kg">酷狗</span>未接入<span class="c">0</span></button>`;
+  $('#libSub').textContent = `${items.length} 首 · 点一行播放 · 整理流程可点`;
+  $('#libTable').innerHTML = items.map((t) => `
+    <div class="tr" data-id="${t.id}">
+      ${coverHTML(t, 'cv')}
+      <div><div class="tt">${t.title}</div><div class="ar">${t.artist || '未知歌手'}</div></div>
+      <div class="al">${t.album || '—'}</div>
+      ${badge(t)}
+      <div class="du">${fmt(t.duration_ms)}</div>
+    </div>`).join('');
+}
+
+function renderSearch() {
+  const q = state.query.trim().toLowerCase();
+  const list = state.tracks.filter((t) => !q || `${t.title} ${t.artist} ${t.album}`.toLowerCase().includes(q)).slice(0, 60);
+  $('#searchResults').innerHTML = list.map((t) => `
+    <div class="res" data-id="${t.id}">
+      ${coverHTML(t, 'cv')}
+      <div><div class="tt">${t.title}</div><div class="ar">${t.artist || '未知歌手'} · ${t.album || ''}</div></div>
+      ${badge(t)}
+      <div class="du" style="font-size:10.5px;color:var(--text-3)">${fmt(t.duration_ms)}</div>
+      <button class="btn playbtn" data-play="${t.id}">播放</button>
+    </div>`).join('') || '<div class="note">没有匹配的歌曲</div>';
+  $('#searchNote').textContent = q ? `“${state.query}” 找到 ${list.length} 首` : '输入关键词过滤；原型里搜的是已加载的曲库和 QQ 结果。';
+}
+
+function renderReport() { /* renderStats does it */ }
+
+/* ---------- player ---------- */
+function playTrack(track, open = false) {
+  if (!track) return;
+  if (!track.id || track.id < 0) { toast('示意数据，播放不可用'); return; }
+  state.current = track;
+  if (!state.queue.length || !state.queue.some((t) => t.id === track.id)) {
+    state.queue = state.tracks.slice();
+  }
+  state.index = state.queue.findIndex((t) => t.id === track.id);
+  audio.src = `/api/stream/${track.id}`;
+  audio.play().then(() => toast(`正在播放 · ${track.title}`)).catch(() => toast('播放失败，检查文件是否还在'));
+  renderNow(); renderBar(); loadLyrics(track); closeCard();
+  if (open) openPlayer();
+}
+function togglePlay() {
+  if (!state.current) { playTrack(state.tracks[0]); return; }
+  if (audio.paused) audio.play().catch(() => {}); else audio.pause();
+}
+function nextTrack() {
+  if (!state.tracks.length) return;
+  const i = state.tracks.findIndex((t) => state.current && t.id === state.current.id);
+  playTrack(state.tracks[(i + 1) % state.tracks.length]);
+}
+function prevTrack() {
+  if (!state.tracks.length) return;
+  const i = state.tracks.findIndex((t) => state.current && t.id === state.current.id);
+  playTrack(state.tracks[(i - 1 + state.tracks.length) % state.tracks.length]);
+}
+function renderBar() {
+  const t = state.current;
+  $('#barTitle').textContent = t ? t.title : '—';
+  $('#barArtist').textContent = t ? `${t.artist || ''} · ${t.album || ''}` : '—';
+  $('#barPlatform').textContent = t ? platformMeta(t).label : '—';
+  if (t) setCover($('#barCover'), t);
+  $('#barPlay').textContent = audio.paused ? '▶' : '⏸';
+  $('#homePlay').textContent = audio.paused ? '▶' : '⏸';
+  $('#poPlay').textContent = audio.paused ? '播放' : '暂停';
+  const dur = audio.duration && Number.isFinite(audio.duration) ? audio.duration * 1000 : (t?.duration_ms || 0);
+  const cur = audio.currentTime * 1000 || 0;
+  $('#barFill').style.width = `${dur ? Math.min(cur / dur * 100, 100) : 0}%`;
+  $('#barTime').textContent = `${fmt(cur)} / ${fmt(dur)}`;
+  $('#homeBar').style.width = `${dur ? Math.min(cur / dur * 100, 100) : 0}%`;
+  $('#homeCur').textContent = fmt(cur);
+  $('#homeDur').textContent = fmt(dur);
+  updateLyrics();
+}
+audio.addEventListener('timeupdate', renderBar);
+audio.addEventListener('play', renderBar);
+audio.addEventListener('pause', renderBar);
+audio.addEventListener('ended', nextTrack);
+audio.addEventListener('loadedmetadata', renderBar);
+
+/* ---------- lyrics ---------- */
+async function loadLyrics(track) {
+  state.lyrics = []; state.lyricId = track.id;
+  try {
+    const data = await api(`/api/tracks/${track.id}/lyrics`);
+    if (state.lyricId !== track.id) return;
+    state.lyrics = data.lines || [];
+    if (state.lyrics.length && state.lyrics[0].t > 5000) {
+      state.lyrics = [{ t: 0, text: '♪ 前奏' }, ...state.lyrics];
+    }
+    renderLyrics();
+  } catch { state.lyrics = []; }
+}
+function renderLyrics() {
+  const box = $('#poLyr');
+  box.innerHTML = state.lyrics.map((l) => `<div class="po-ly" data-t="${l.t}">${l.text}</div>`).join('');
+  updateLyrics(true);
+}
+function updateLyrics(force = false) {
+  const box = $('#poLyr');
+  if (!box || !state.lyrics.length) {
+    if (!state.lyrics.length && box && force) box.innerHTML = '<div class="note">暂无歌词</div>';
+    return;
+  }
+  const ms = (audio.currentTime || 0) * 1000;
+  let idx = -1;
+  for (let i = 0; i < state.lyrics.length; i += 1) if (state.lyrics[i].t <= ms) idx = i; else break;
+  const lines = $$('.po-ly', box);
+  lines.forEach((el, i) => el.classList.toggle('on', i === idx));
+  if (idx >= 0 && lines[idx]) {
+    const y = lines[idx].offsetTop + lines[idx].offsetHeight / 2;
+    box.style.transform = `translateY(${box.parentElement.clientHeight / 2 - y}px)`;
+  }
+}
+function openPlayer() {
+  if (!state.current) return;
+  const t = state.current;
+  $('#playerOverlay').classList.add('on');
+  setCover($('#poCover'), t);
+  $('#poTitle').textContent = t.title;
+  $('#poArtist').textContent = `${t.artist || '未知歌手'} · ${t.album || ''}`;
+  $('#poBadge').className = `badge ${platformOf(t)}`;
+  $('#poBadge').textContent = platformMeta(t).short;
+  $('#poSub').textContent = fmt(t.duration_ms);
+  if (state.lyricId !== t.id) loadLyrics(t);
+  renderLyrics();
+}
+function closePlayer() { $('#playerOverlay').classList.remove('on'); }
+
+/* ---------- galaxy ---------- */
+const galaxy = $('#galaxy');
+const mini = $('#miniGalaxy');
+const gctx = galaxy.getContext('2d');
+const mctx = mini.getContext('2d');
+let W = 0, H = 0, MW = 0, MH = 0, DPR = 1;
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  if (galaxy.clientWidth) {
+    W = galaxy.clientWidth; H = galaxy.clientHeight;
+    galaxy.width = Math.round(W * DPR); galaxy.height = Math.round(H * DPR);
+    gctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  if (mini.clientWidth) {
+    MW = mini.clientWidth; MH = mini.clientHeight;
+    mini.width = Math.round(MW * DPR); mini.height = Math.round(MH * DPR);
+    mctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+}
+window.addEventListener('resize', resize);
+
+function project(star) {
+  const bx = W * 0.43;
+  const by = H * 0.41;
+  return {
+    x: W / 2 + state.camera.x + star.nx * bx * state.camera.scale,
+    y: H / 2 + state.camera.y + star.ny * by * state.camera.scale,
+    r: star.r * state.camera.scale,
+  };
+}
+function hitTest(x, y) {
+  let best = null, bestD = 18;
+  for (const star of visibleStars()) {
+    const p = project(star);
+    const d = Math.hypot(p.x - x, p.y - y);
+    if (d < Math.max(12, p.r * 2.6) && d < bestD) { bestD = d; best = star; }
+  }
+  return best;
+}
+function drawNebula(ctx, w, h, scale = 1) {
+  const blobs = [
+    { x: w * 0.5, y: h * 0.5, r: Math.min(w, h) * 0.58, c: 'rgba(240,163,94,.20)' },
+    { x: w * 0.72, y: h * 0.38, r: Math.min(w, h) * 0.52, c: 'rgba(90,162,255,.20)' },
+    { x: w * 0.3, y: h * 0.66, r: Math.min(w, h) * 0.44, c: 'rgba(167,139,250,.12)' },
+    { x: w * 0.58, y: h * 0.76, r: Math.min(w, h) * 0.3, c: 'rgba(90,162,255,.09)' },
+  ];
+  for (const b of blobs) {
+    const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+    g.addColorStop(0, b.c); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  }
+}
+
+function drawDust(ctx, w, h, scale = 1, ox = 0, oy = 0) {
+  for (const d of state.dust || []) {
+    const x = w / 2 + ox + d.nx * w * 0.46 * scale;
+    const y = h / 2 + oy + d.ny * h * 0.46 * scale;
+    if (x < 0 || x > w || y < 0 || y > h) continue;
+    ctx.globalAlpha = d.bright * (0.55 + 0.45 * Math.sin(performance.now() / 1400 + d.phase));
+    ctx.fillStyle = '#b9c9dc';
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(0.4, d.r * scale), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+function drawGalaxy(now) {
+  if (W < 2) resize();
+  gctx.clearRect(0, 0, W, H);
+  drawNebula(gctx, W, H);
+  drawDust(gctx, W, H, state.camera.scale, state.camera.x, state.camera.y);
+  const stars = visibleStars();
+  const playingId = state.current && state.current.id;
+
+  // faint orbital rings for structure
+  gctx.save();
+  gctx.translate(W / 2 + state.camera.x, H / 2 + state.camera.y);
+  gctx.lineWidth = 1;
+  for (const [rx, ry, a] of [[0.42, 0.32, 0.07], [0.66, 0.5, 0.055], [0.92, 0.7, 0.035]]) {
+    gctx.strokeStyle = `rgba(143,163,187,${a})`;
+    gctx.beginPath();
+    gctx.ellipse(0, 0, W * rx * state.camera.scale, H * ry * state.camera.scale, 0, 0, Math.PI * 2);
+    gctx.stroke();
+  }
+  gctx.restore();
+
+  // constellation lines: same album or artist, close together
+  gctx.lineWidth = 0.6;
+  for (let i = 0; i < stars.length; i += 1) {
+    for (let j = i + 1; j < stars.length; j += 1) {
+      const a = stars[i], b = stars[j];
+      if (!((a.album && a.album === b.album) || (a.artist && a.artist !== '未知歌手' && a.artist === b.artist))) continue;
+      const pa = project(a), pb = project(b);
+      const d = Math.hypot(pa.x - pb.x, pa.y - pb.y);
+      if (d > 170) continue;
+      gctx.strokeStyle = `rgba(143,163,187,${0.12 * (1 - d / 170)})`;
+      gctx.beginPath(); gctx.moveTo(pa.x, pa.y); gctx.lineTo(pb.x, pb.y); gctx.stroke();
+    }
+  }
+
+  for (const star of stars) {
+    const p = project(star);
+    if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) continue;
+    const twinkle = 0.62 + 0.38 * Math.sin(now / 900 + star.phase);
+    const active = state.hover === star || state.selected === star;
+    const isPlaying = playingId === star.id;
+    const r = p.r * (active ? 1.9 : 1);
+    gctx.save();
+    gctx.shadowColor = star.color;
+    gctx.shadowBlur = active ? 34 : isPlaying ? 28 : 16;
+    gctx.fillStyle = star.color;
+    gctx.globalAlpha = isPlaying ? 1 : twinkle;
+    gctx.beginPath(); gctx.arc(p.x, p.y, Math.max(1.2, r), 0, Math.PI * 2); gctx.fill();
+    if (r > 4.1) {
+      gctx.globalAlpha = 0.35;
+      gctx.strokeStyle = star.color;
+      gctx.lineWidth = 0.8;
+      gctx.beginPath();
+      gctx.moveTo(p.x - r * 2.4, p.y); gctx.lineTo(p.x + r * 2.4, p.y);
+      gctx.moveTo(p.x, p.y - r * 2.4); gctx.lineTo(p.x, p.y + r * 2.4);
+      gctx.stroke();
+    }
+    gctx.restore();
+    if (isPlaying) {
+      gctx.strokeStyle = 'rgba(230,237,246,.55)';
+      gctx.lineWidth = 1;
+      gctx.beginPath(); gctx.arc(p.x, p.y, r + 6 + Math.sin(now / 300) * 2, 0, Math.PI * 2); gctx.stroke();
+    }
+    if (active) {
+      gctx.strokeStyle = star.color;
+      gctx.globalAlpha = 0.85;
+      gctx.lineWidth = 1.2;
+      gctx.beginPath(); gctx.arc(p.x, p.y, r + 9, 0, Math.PI * 2); gctx.stroke();
+      gctx.globalAlpha = 1;
+    }
+  }
+  $('#zoomBadge').textContent = `${Math.round(state.camera.scale * 100)}%`;
+}
+function drawMini(now) {
+  if (MW < 2) return;
+  mctx.clearRect(0, 0, MW, MH);
+  drawNebula(mctx, MW, MH);
+  drawDust(mctx, MW, MH, 0.8, 0, 0);
+  const bx = MW * 0.43;
+  const by = MH * 0.41;
+  for (const star of state.stars) {
+    const x = MW / 2 + star.nx * bx;
+    const y = MH / 2 + star.ny * by;
+    mctx.save();
+    mctx.shadowColor = star.color; mctx.shadowBlur = 9;
+    mctx.globalAlpha = 0.6 + 0.3 * Math.sin(now / 1000 + star.phase);
+    mctx.fillStyle = star.color;
+    mctx.beginPath(); mctx.arc(x, y, Math.max(1, star.r * 0.8), 0, Math.PI * 2); mctx.fill();
+    mctx.restore();
+  }
+}
+function loop(now) {
+  if (state.view === 'starfield') drawGalaxy(now);
+  if (state.view === 'home') drawMini(now);
+  requestAnimationFrame(loop);
+}
+
+/* ---------- card ---------- */
+function openCard(star, x, y) {
+  state.selected = star;
+  const card = $('#starCard');
+  setCover($('#cardCover'), star);
+  $('#cardTitle').textContent = star.title;
+  $('#cardMeta').textContent = `${star.artist || '未知歌手'} · ${star.album || '—'}`;
+  $('#cardBadge').className = `badge ${platformOf(star)}`;
+  $('#cardBadge').textContent = platformMeta(star).label;
+  $('#cardDur').textContent = fmt(star.duration_ms);
+  $('#cardId').textContent = `${star.provider || 'local'} · id ${star.id}`;
+  card.classList.add('on');
+  if (window.innerWidth <= 900) { card.style.left = ''; card.style.top = ''; return; }
+  const rect = $('#view-starfield').getBoundingClientRect();
+  const cw = 288, ch = 196;
+  let left = x + 18, top = y - 20;
+  if (left + cw > W - 12) left = x - cw - 18;
+  if (top + ch > H - 12) top = H - ch - 12;
+  card.style.left = `${Math.max(12, left)}px`;
+  card.style.top = `${Math.max(12, top)}px`;
+}
+function closeCard() {
+  state.selected = null;
+  $('#starCard').classList.remove('on');
+}
+
+/* ---------- events ---------- */
+$$('.nav').forEach((n) => n.addEventListener('click', () => go(n.dataset.view)));
+$$('[data-go]').forEach((n) => n.addEventListener('click', () => go(n.dataset.go)));
+$('#homePlay').addEventListener('click', togglePlay);
+$('#barPlay').addEventListener('click', togglePlay);
+$('#poPlay').addEventListener('click', togglePlay);
+$('#homePrev').addEventListener('click', prevTrack);
+$('#homeNext').addEventListener('click', nextTrack);
+$('#barPrev').addEventListener('click', prevTrack);
+$('#barNext').addEventListener('click', nextTrack);
+$('#homeOpen').addEventListener('click', openPlayer);
+$('#barInfo').addEventListener('click', openPlayer);
+$('#barCover').addEventListener('click', openPlayer);
+$('#poClose').addEventListener('click', closePlayer);
+$('#poClose2').addEventListener('click', closePlayer);
+$('#teaser').addEventListener('click', (e) => { if (e.target.tagName !== 'BUTTON') go('starfield'); });
+
+$$('.sfilter').forEach((b) => b.addEventListener('click', () => {
+  if (b.disabled) return;
+  state.filter = b.dataset.filter;
+  $$('.sfilter').forEach((x) => x.classList.toggle('on', x === b));
+  closeCard();
+}));
+$('#sfSearch').addEventListener('input', (e) => { state.query = e.target.value; closeCard(); });
+$('#searchInput').addEventListener('input', (e) => { state.query = e.target.value; renderSearch(); });
+$('#searchBtn').addEventListener('click', renderSearch);
+
+$('#libTable').addEventListener('click', (e) => {
+  const row = e.target.closest('.tr');
+  if (!row) return;
+  const track = state.tracks.find((t) => String(t.id) === row.dataset.id);
+  if (track) playTrack(track);
+});
+$('#searchResults').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-play]');
+  const row = e.target.closest('.res');
+  if (!row) return;
+  const track = state.tracks.find((t) => String(t.id) === (btn ? btn.dataset.play : row.dataset.id));
+  if (track) playTrack(track);
+});
+
+$('#starClose').addEventListener('click', closeCard);
+$('#cardPlay').addEventListener('click', () => { if (state.selected) playTrack(state.selected); });
+$('#cardOpen').addEventListener('click', () => { if (state.selected) { playTrack(state.selected, true); } });
+$('#cardQueue').addEventListener('click', () => { if (state.selected) toast(`已加入队列 · ${state.selected.title}`); });
+
+/* galaxy pointer */
+let dragStart = null;
+galaxy.addEventListener('pointerdown', (e) => {
+  if (e.button !== 0) return;
+  state.dragging = true; state.dragMoved = 0;
+  dragStart = { x: e.clientX, y: e.clientY, cx: state.camera.x, cy: state.camera.y };
+  galaxy.setPointerCapture(e.pointerId);
+});
+galaxy.addEventListener('pointermove', (e) => {
+  if (!state.dragging) {
+    const star = hitTest(e.offsetX, e.offsetY);
+    state.hover = star;
+    const label = $('#hoverLabel');
+    if (star) {
+      const p = project(star);
+      label.textContent = `${star.title} · ${platformMeta(star).short}`;
+      label.style.left = `${p.x}px`; label.style.top = `${p.y}px`;
+      label.classList.add('on');
+    } else label.classList.remove('on');
+    return;
+  }
+  const dx = e.clientX - dragStart.x, dy = e.clientY - dragStart.y;
+  state.dragMoved = Math.max(state.dragMoved, Math.abs(dx) + Math.abs(dy));
+  state.camera.x = dragStart.cx + dx;
+  state.camera.y = dragStart.cy + dy;
+});
+galaxy.addEventListener('pointerup', (e) => {
+  if (!state.dragging) return;
+  state.dragging = false;
+  if (state.dragMoved > 6) return;
+  const star = hitTest(e.offsetX, e.offsetY);
+  if (star) openCard(star, e.offsetX, e.offsetY);
+  else closeCard();
+});
+galaxy.addEventListener('dblclick', (e) => {
+  const star = hitTest(e.offsetX, e.offsetY);
+  if (star) playTrack(star);
+});
+galaxy.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const before = state.camera.scale;
+  const next = Math.min(2.4, Math.max(0.6, before * (e.deltaY > 0 ? 0.92 : 1.08)));
+  if (next === before) return;
+  const mx = e.offsetX - W / 2, my = e.offsetY - H / 2;
+  state.camera.x = mx - (mx - state.camera.x) * (next / before);
+  state.camera.y = my - (my - state.camera.y) * (next / before);
+  state.camera.scale = next;
+  $('#zoomBadge').textContent = `${Math.round(next * 100)}%`;
+}, { passive: false });
+
+/* organize modal */
+const orgPlan = [
+  ['夜间', 18, '夜航、潮汐信…'],
+  ['通勤', 12, '晴天、稻香…'],
+  ['纯器乐', 6, '蓝色房间…'],
+  ['待整理', 10, '低置信度，先不动'],
+];
+function openOrganize() { state.orgStep = 1; renderOrganize(); $('#organizeMask').classList.add('on'); }
+function renderOrganize() {
+  const step = state.orgStep;
+  $$('#orgSteps div').forEach((d, i) => d.classList.toggle('done', i + 1 < step));
+  $('#orgStep').textContent = `第 ${step} / 4 步`;
+  if (step === 1) {
+    $('#orgTitle').textContent = '整理「本地曲库」';
+    $('#orgBody').innerHTML = `<div class="small dim">先看方案，不写入。${state.tracks.length} 首会按平台/曲风分成 4 组：</div>
+      <table class="pv"><tr><th>分组</th><th>数量</th><th>示例</th></tr>${orgPlan.map((p) => `<tr><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td></tr>`).join('')}</table>
+      <div class="note">原型演示；真实整理会先冻结方案、生成 run_id，可回滚。</div>`;
+    $('#orgFoot').innerHTML = `<button class="btn" onclick="closeOrganize()">取消</button><button class="btn pri" onclick="orgNext()">冻结并预览</button>`;
+  } else if (step === 2) {
+    $('#orgTitle').textContent = '冻结方案';
+    $('#orgBody').innerHTML = `<div class="small dim">方案已冻结：SHA-256 8f3c…a91e</div>
+      <div class="note">此时还没有写入任何平台。下一步会按 20 首/批限速写入，并逐批回读核对。</div>`;
+    $('#orgFoot').innerHTML = `<button class="btn" onclick="orgBack()">返回</button><button class="btn pri" onclick="orgNext()">开始写入</button>`;
+  } else if (step === 3) {
+    $('#orgTitle').textContent = '正在写入';
+    $('#orgBody').innerHTML = `<div class="small dim">第 2 / 3 批 · 已写入 24 首 · 限速 20 首/批</div><div class="bar" style="margin-top:12px"><i style="width:66%"></i></div><div class="note">中途可以停，下次从这一批继续。</div>`;
+    $('#orgFoot').innerHTML = `<button class="btn" onclick="orgBack()">返回</button><button class="btn pri" onclick="orgNext()">模拟完成</button>`;
+  } else {
+    $('#orgTitle').textContent = '完成';
+    $('#orgBody').innerHTML = `<div style="font-size:13px;line-height:1.9">写入 <b>36</b> 首，跳过 10 首（待整理），失败 0。<br>run_id：<span style="font-family:Consolas">run-20261110-star</span></div><div class="note">不满意可按 run_id 回滚，只撤销这次新增。</div>`;
+    $('#orgFoot').innerHTML = `<button class="btn" onclick="closeOrganize()">关闭</button>`;
+  }
+}
+function orgNext() { state.orgStep = Math.min(4, state.orgStep + 1); renderOrganize(); }
+function orgBack() { state.orgStep = Math.max(1, state.orgStep - 1); renderOrganize(); }
+function closeOrganize() { $('#organizeMask').classList.remove('on'); }
+$('#organizeBtn').addEventListener('click', openOrganize);
+$('#organizeMask').addEventListener('click', (e) => { if (e.target.id === 'organizeMask') closeOrganize(); });
+window.openOrganize = openOrganize; window.closeOrganize = closeOrganize; window.orgNext = orgNext; window.orgBack = orgBack;
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Escape') { closePlayer(); closeCard(); closeOrganize(); }
+  if (e.code === 'Space' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) { e.preventDefault(); togglePlay(); }
+  if (e.code === 'KeyF' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) { openPlayer(); }
+  if (e.code === 'KeyG' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) { go('starfield'); }
+});
+
+/* boot */
+resize();
+loadData();
+requestAnimationFrame(loop);
+window.__proto = state;
+window.__protoGalaxy = { state, go, openCard, playTrack, openPlayer, closePlayer, project };
+
+/* 左侧工具栏隐藏/展开，记在 localStorage；主程序 iframe 嵌入时自动隐藏 */
+const RAIL_KEY = "sf.rail.hidden";
+const EMBED = new URLSearchParams(location.search).has("embed");
+if (EMBED) document.body.classList.add("embed");
+function setRailHidden(hidden) {
+  document.body.classList.toggle("rail-hidden", hidden);
+  try { localStorage.setItem(RAIL_KEY, hidden ? "1" : "0"); } catch { /* ignore */ }
+}
+document.getElementById("railToggle")?.addEventListener("click", () => setRailHidden(true));
+document.getElementById("railShow")?.addEventListener("click", () => setRailHidden(false));
+try {
+  if (!EMBED && localStorage.getItem(RAIL_KEY) === "1") setRailHidden(true);
+} catch { /* ignore */ }
+</script>
+</body>
+</html>
