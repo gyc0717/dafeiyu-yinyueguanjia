@@ -1033,7 +1033,44 @@ def _upstream_iter(response, chunk: int = 128 * 1024):
         response.close()
 
 
+def _rights_row(row):
+    """同一首歌在多个平台都有时，改用排在前面的那个平台播放。
+
+    动机：本机 QQ 有会员、网易云是非会员号，同一首「不潮不用花钱」在网易云
+    只下发 35 秒试听片段，在 QQ 是完整 237 秒。曲库里两条记录并存，点哪条
+    就该放完整的那条。
+    """
+    order = config.provider_preference()
+    provider = row["provider"]
+    if provider not in order:
+        return row
+    rank = order.index(provider)
+    if rank == 0:
+        return row
+    work_key = row["work_key"] if "work_key" in row.keys() else None
+    if not work_key:
+        return row
+    better = order[:rank]
+    placeholders = ",".join("?" * len(better))
+    conn = connect()
+    try:
+        alt = conn.execute(
+            f"select provider, provider_id from tracks where work_key=? and provider in ({placeholders}) limit 1",
+            (work_key, *better),
+        ).fetchone()
+    finally:
+        conn.close()
+    if not alt:
+        return row
+    log.info("同曲改用它源：%s -> %s (#%s)", provider, alt["provider"], row["id"])
+    out = dict(row)
+    out["provider"] = alt["provider"]
+    out["provider_id"] = alt["provider_id"]
+    return out
+
+
 def _online_stream(row, request: Request):
+    row = _rights_row(row)
     source = providers.get_provider(row["provider"])
     try:
         log.debug("online stream #%s resolve %s", row["id"], row["provider_id"])

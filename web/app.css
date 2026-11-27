@@ -1108,7 +1108,7 @@ html[data-glass="on"] .top-actions .ghost {
 
 /* ------------------------------------------------------------- butler drawer */
 .butler {
-  position: fixed; z-index: 148; top: 18px; right: 18px; bottom: 18px; width: 420px;
+  position: fixed; z-index: 155; top: 18px; right: 18px; bottom: 18px; width: 420px;
   display: flex; flex-direction: column; gap: 14px; padding: 18px;
   border-radius: 24px; border: 1px solid var(--line);
   background: linear-gradient(180deg, #141d2d, #090f1a);

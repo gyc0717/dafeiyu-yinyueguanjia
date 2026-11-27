@@ -60,6 +60,22 @@ def load_config() -> dict:
     return cfg
 
 
+DEFAULT_PREFER_PROVIDERS = ["qq", "netease"]
+
+
+def provider_preference() -> list[str]:
+    """同一首歌在多个平台都有时按这个顺序挑播放源，靠前的优先。
+
+    默认 QQ 在前：本机 QQ 有会员，网易云是非会员号，同曲在网易云只会下到
+    30 秒左右的试听片段，排在后面就不会再被选中。
+    """
+    raw = load_config().get("prefer_providers")
+    if not isinstance(raw, list):
+        return list(DEFAULT_PREFER_PROVIDERS)
+    picked = [str(x).strip() for x in raw if str(x).strip()]
+    return picked or list(DEFAULT_PREFER_PROVIDERS)
+
+
 def library_roots() -> list[Path]:
     roots = []
     for raw in load_config()["library_roots"]:

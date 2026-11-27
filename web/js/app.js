@@ -3109,6 +3109,8 @@ function setSidebarHidden(hidden) {
 function openButler(panel = "home") {
   // 管家是主界面的抽屉：先退出星海，免得关掉抽屉后还停在星海
   if (el.starfieldOverlay?.classList.contains("open")) closeStarfieldPanel();
+  // 曲库为空时设置弹窗会自动弹出来（z-index 150），它一盖上来挡住的正是抽屉右上角的关闭按钮
+  if (el.settingsOverlay?.classList.contains("open")) closeSettings();
   el.butlerDrawer.classList.add("open");
   el.butlerDrawer.setAttribute("aria-hidden", "false");
   state.butlerOpen = true;
